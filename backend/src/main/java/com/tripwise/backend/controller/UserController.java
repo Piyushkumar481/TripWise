@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController  {
 
     private final UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
 
@@ -35,4 +35,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(apiResponse);
     }
+
+    @GetMapping("/profile")
+    public String profile() {
+     return "Welcome to TripWise";
+}
 }
