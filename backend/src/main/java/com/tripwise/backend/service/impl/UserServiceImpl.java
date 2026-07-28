@@ -7,11 +7,13 @@ import com.tripwise.backend.exception.ResourceAlreadyExistsException;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -22,7 +24,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse register(RegisterRequest request) {
 
+        log.info("Registering user with email: {}", request.getEmail());
+
         if (userRepository.existsByEmail(request.getEmail())) {
+
+            log.warn("Registration failed. Email already exists: {}", request.getEmail());
+
             throw new ResourceAlreadyExistsException("Email already registered.");
         }
 
@@ -37,6 +44,8 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        log.info("User registered successfully with id: {}", savedUser.getId());
 
         return UserResponse.builder()
                 .id(savedUser.getId())
