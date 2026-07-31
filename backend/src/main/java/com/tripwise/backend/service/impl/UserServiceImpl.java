@@ -1,10 +1,14 @@
 package com.tripwise.backend.service.impl;
 
+import com.tripwise.backend.dto.LoginRequest;
+import com.tripwise.backend.dto.LoginResponse;
 import com.tripwise.backend.dto.RegisterRequest;
 import com.tripwise.backend.dto.UserResponse;
 import com.tripwise.backend.entity.User;
+import com.tripwise.backend.exception.InvalidCredentialsException;
 import com.tripwise.backend.exception.ResourceAlreadyExistsException;
 import com.tripwise.backend.repository.UserRepository;
+import com.tripwise.backend.security.JwtService;
 import com.tripwise.backend.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +24,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -52,6 +57,37 @@ public class UserServiceImpl implements UserService {
                 .fullName(savedUser.getFullName())
                 .email(savedUser.getEmail())
                 .phone(savedUser.getPhone())
+                .build();
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
+            throw new InvalidCredentialsException(
+                    "Invalid email or password");
+        }
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build();
+
+        return LoginResponse.builder()
+                .token(token)
+                .tokenType("Bearer")
+                .user(userResponse)
                 .build();
     }
 }

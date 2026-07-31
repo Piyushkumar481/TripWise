@@ -1,6 +1,8 @@
 package com.tripwise.backend.controller;
 
 import com.tripwise.backend.dto.ApiResponse;
+import com.tripwise.backend.dto.LoginRequest;
+import com.tripwise.backend.dto.LoginResponse;
 import com.tripwise.backend.dto.RegisterRequest;
 import com.tripwise.backend.dto.UserResponse;
 import com.tripwise.backend.service.interfaces.UserService;
@@ -15,7 +17,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController  {
+public class UserController {
 
     private final UserService userService;
 
@@ -36,8 +38,25 @@ public class UserController  {
                 .body(apiResponse);
     }
 
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        LoginResponse response = userService.login(request);
+
+        ApiResponse<LoginResponse> apiResponse =
+                ApiResponse.<LoginResponse>builder()
+                        .success(true)
+                        .message("Login successful.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
     @GetMapping("/profile")
     public String profile() {
-     return "Welcome to TripWise";
-}
+        return "Welcome to TripWise";
+    }
 }

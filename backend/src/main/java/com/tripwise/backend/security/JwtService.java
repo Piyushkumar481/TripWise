@@ -1,4 +1,4 @@
-package com.tripwise.backend.service;
+package com.tripwise.backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
