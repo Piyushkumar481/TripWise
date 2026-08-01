@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 
@@ -55,8 +56,9 @@ public class UserController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @GetMapping("/profile")
-    public String profile() {
-        return "Welcome to TripWise";
+  @GetMapping("/profile")
+public String profile(Authentication authentication) {
+
+    return "Welcome " + authentication.getName();
     }
 }
