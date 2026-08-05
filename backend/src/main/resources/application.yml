@@ -13,8 +13,8 @@ spring:
         format_sql: true
 
 jwt:
-  secret: VGhpc0lzQVN1cGVyU2VjcmV0S2V5Rm9yVHJpcFdpc2VKV1RBdXRoZW50aWNhdGlvbjEyMzQ1Njc4OTA=
-  expiration: 86400000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 server:
   port: 8080

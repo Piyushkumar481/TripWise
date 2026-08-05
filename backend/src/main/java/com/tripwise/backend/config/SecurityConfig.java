@@ -1,5 +1,6 @@
 package com.tripwise.backend.config;
 
+import com.tripwise.backend.security.JwtAuthenticationEntryPoint;
 import com.tripwise.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,6 +47,12 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .anyRequest().authenticated()
+                )
+
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(
+                                authenticationEntryPoint
+                        )
                 )
 
                 .addFilterBefore(
