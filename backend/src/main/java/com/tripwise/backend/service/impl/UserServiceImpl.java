@@ -3,6 +3,7 @@ package com.tripwise.backend.service.impl;
 import com.tripwise.backend.dto.LoginRequest;
 import com.tripwise.backend.dto.LoginResponse;
 import com.tripwise.backend.dto.RegisterRequest;
+import com.tripwise.backend.dto.UpdateProfileRequest;
 import com.tripwise.backend.dto.UserResponse;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.exception.InvalidCredentialsException;
@@ -88,6 +89,44 @@ public class UserServiceImpl implements UserService {
                 .token(token)
                 .tokenType("Bearer")
                 .user(userResponse)
+                .build();
+    }
+
+    @Override
+    public UserResponse getCurrentUser(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("User not found"));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build();
+    }
+
+    @Override
+    public UserResponse updateCurrentUser(
+            String email,
+            UpdateProfileRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("User not found"));
+
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        User updatedUser = userRepository.save(user);
+
+        return UserResponse.builder()
+                .id(updatedUser.getId())
+                .fullName(updatedUser.getFullName())
+                .email(updatedUser.getEmail())
+                .phone(updatedUser.getPhone())
                 .build();
     }
 }

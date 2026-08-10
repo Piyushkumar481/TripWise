@@ -4,14 +4,15 @@ import com.tripwise.backend.dto.ApiResponse;
 import com.tripwise.backend.dto.LoginRequest;
 import com.tripwise.backend.dto.LoginResponse;
 import com.tripwise.backend.dto.RegisterRequest;
+import com.tripwise.backend.dto.UpdateProfileRequest;
 import com.tripwise.backend.dto.UserResponse;
 import com.tripwise.backend.service.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -28,12 +29,13 @@ public class UserController {
 
         UserResponse response = userService.register(request);
 
-        ApiResponse<UserResponse> apiResponse = ApiResponse.<UserResponse>builder()
-                .success(true)
-                .message("User registered successfully.")
-                .data(response)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ApiResponse<UserResponse> apiResponse =
+                ApiResponse.<UserResponse>builder()
+                        .success(true)
+                        .message("User registered successfully.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build();
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(apiResponse);
@@ -56,9 +58,43 @@ public class UserController {
         return ResponseEntity.ok(apiResponse);
     }
 
-  @GetMapping("/profile")
-public String profile(Authentication authentication) {
+    @GetMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
+            Authentication authentication) {
 
-    return "Welcome " + authentication.getName();
+        UserResponse response =
+                userService.getCurrentUser(authentication.getName());
+
+        ApiResponse<UserResponse> apiResponse =
+                ApiResponse.<UserResponse>builder()
+                        .success(true)
+                        .message("Profile retrieved successfully.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PutMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserResponse>> updateCurrentUser(
+            Authentication authentication,
+            @Valid @RequestBody UpdateProfileRequest request) {
+
+        UserResponse response =
+                userService.updateCurrentUser(
+                        authentication.getName(),
+                        request
+                );
+
+        ApiResponse<UserResponse> apiResponse =
+                ApiResponse.<UserResponse>builder()
+                        .success(true)
+                        .message("Profile updated successfully.")
+                        .data(response)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(apiResponse);
     }
 }
