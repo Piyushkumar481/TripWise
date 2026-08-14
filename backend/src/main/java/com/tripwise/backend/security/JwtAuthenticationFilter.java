@@ -3,9 +3,9 @@ package com.tripwise.backend.security;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getServletPath();
+
+        return path.startsWith("/api/auth/");
+    }
 
     @Override
     protected void doFilterInternal(
@@ -44,19 +52,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email;
 
         try {
+
             email = jwtService.extractEmail(jwt);
-        } 
-        catch (Exception ex) {
 
-    log.warn(
-            "JWT authentication failed: {}",
-            ex.getMessage()
-    );
+        } catch (Exception ex) {
 
-    filterChain.doFilter(request, response);
-    return;
-}
-        
+            log.warn(
+                    "JWT authentication failed: {}",
+                    ex.getMessage()
+            );
+
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (email != null &&
                 SecurityContextHolder.getContext()
