@@ -65,7 +65,29 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<TripResponse>>> searchTrips(
+            Authentication authentication,
+            @RequestParam String city) {
+
+        List<TripResponse> trips =
+                tripService.searchTrips(
+                        authentication.getName(),
+                        city
+                );
+
+        ApiResponse<List<TripResponse>> response =
+                ApiResponse.<List<TripResponse>>builder()
+                        .success(true)
+                        .message("Trips searched successfully.")
+                        .data(trips)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<ApiResponse<TripResponse>> getTripById(
             Authentication authentication,
             @PathVariable Long id) {
@@ -126,6 +148,28 @@ public class TripController {
                         .success(true)
                         .message("Trip deleted successfully.")
                         .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PatchMapping("/{id}/archive")
+    public ResponseEntity<ApiResponse<TripResponse>> archiveTrip(
+            Authentication authentication,
+            @PathVariable Long id) {
+
+        TripResponse response =
+                tripService.archiveTrip(
+                        authentication.getName(),
+                        id
+                );
+
+        ApiResponse<TripResponse> apiResponse =
+                ApiResponse.<TripResponse>builder()
+                        .success(true)
+                        .message("Trip archived successfully.")
+                        .data(response)
                         .timestamp(LocalDateTime.now())
                         .build();
 

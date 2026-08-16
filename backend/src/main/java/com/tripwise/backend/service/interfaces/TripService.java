@@ -19,4 +19,12 @@ public interface TripService {
             TripRequest request);
 
     void deleteTrip(String email, Long tripId);
+
+    TripResponse archiveTrip(
+            String email,
+            Long tripId);
+
+    List<TripResponse> searchTrips(
+            String email,
+            String city);
 }

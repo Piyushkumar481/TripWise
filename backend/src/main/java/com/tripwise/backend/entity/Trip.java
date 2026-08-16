@@ -42,8 +42,9 @@ public class Trip {
     @Column(precision = 12, scale = 2)
     private BigDecimal budget;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status;
+    private TripStatus status;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -3,8 +3,11 @@ package com.tripwise.backend.service.impl;
 import com.tripwise.backend.dto.TripRequest;
 import com.tripwise.backend.dto.TripResponse;
 import com.tripwise.backend.entity.Trip;
+import com.tripwise.backend.entity.TripStatus;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.exception.InvalidCredentialsException;
+import com.tripwise.backend.exception.InvalidTripDateException;
+import com.tripwise.backend.exception.TripNotFoundException;
 import com.tripwise.backend.repository.TripRepository;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.interfaces.TripService;
@@ -44,7 +47,7 @@ public class TripServiceImpl implements TripService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .budget(request.getBudget())
-                .status("PLANNED")
+                .status(TripStatus.PLANNED)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -78,7 +81,7 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripRepository
                 .findByIdAndUserId(tripId, user.getId())
                 .orElseThrow(() ->
-                        new RuntimeException("Trip not found"));
+                        new TripNotFoundException("Trip not found"));
 
         return mapToResponse(trip);
     }
@@ -96,7 +99,7 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripRepository
                 .findByIdAndUserId(tripId, user.getId())
                 .orElseThrow(() ->
-                        new RuntimeException("Trip not found"));
+                        new TripNotFoundException("Trip not found"));
 
         validateDates(
                 request.getStartDate(),
@@ -127,9 +130,49 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripRepository
                 .findByIdAndUserId(tripId, user.getId())
                 .orElseThrow(() ->
-                        new RuntimeException("Trip not found"));
+                        new TripNotFoundException("Trip not found"));
 
         tripRepository.delete(trip);
+    }
+
+    @Override
+    public TripResponse archiveTrip(
+            String email,
+            Long tripId) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("User not found"));
+
+        Trip trip = tripRepository
+                .findByIdAndUserId(tripId, user.getId())
+                .orElseThrow(() ->
+                        new TripNotFoundException("Trip not found"));
+
+        trip.setStatus(TripStatus.ARCHIVED);
+
+        Trip updatedTrip = tripRepository.save(trip);
+
+        return mapToResponse(updatedTrip);
+    }
+
+    @Override
+    public List<TripResponse> searchTrips(
+            String email,
+            String city) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("User not found"));
+
+        return tripRepository
+                .findByUserAndDestinationCityContainingIgnoreCase(
+                        user,
+                        city
+                )
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private void validateDates(
@@ -137,7 +180,7 @@ public class TripServiceImpl implements TripService {
             LocalDate endDate) {
 
         if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException(
+            throw new InvalidTripDateException(
                     "End date cannot be before start date");
         }
     }

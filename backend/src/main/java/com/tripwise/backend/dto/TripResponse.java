@@ -1,5 +1,6 @@
 package com.tripwise.backend.dto;
 
+import com.tripwise.backend.entity.TripStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,5 +25,5 @@ public class TripResponse {
 
     private BigDecimal budget;
 
-    private String status;
+    private TripStatus status;
 }
