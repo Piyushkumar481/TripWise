@@ -126,6 +126,36 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidFile(
+            InvalidFileException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("success", false);
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
+    }
+
+    @ExceptionHandler(DocumentNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleDocumentNotFound(
+            DocumentNotFoundException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("success", false);
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(
             RuntimeException ex) {
