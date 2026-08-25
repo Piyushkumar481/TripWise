@@ -15,4 +15,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             Long id,
             Trip trip
     );
+
+    List<Expense> findByTripIn(
+            List<Trip> trips
+    );
 }
