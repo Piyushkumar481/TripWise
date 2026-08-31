@@ -5,6 +5,9 @@ import com.tripwise.backend.dto.TripRequest;
 import com.tripwise.backend.dto.TripResponse;
 import com.tripwise.backend.service.interfaces.TripService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
@@ -19,10 +22,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
+@Tag(
+        name = "Trips",
+        description = "Trip management APIs"
+)
 public class TripController {
 
     private final TripService tripService;
 
+    @Operation(
+            summary = "Create a trip",
+            description = "Creates a new trip for the authenticated user."
+    )
     @PostMapping
     public ResponseEntity<ApiResponse<TripResponse>> createTrip(
             Authentication authentication,
@@ -45,6 +56,10 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(
+            summary = "Get my trips",
+            description = "Returns all trips belonging to the authenticated user."
+    )
     @GetMapping
     public ResponseEntity<ApiResponse<List<TripResponse>>> getMyTrips(
             Authentication authentication) {
@@ -65,6 +80,10 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(
+            summary = "Search trips",
+            description = "Searches the authenticated user's trips by destination city."
+    )
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<TripResponse>>> searchTrips(
             Authentication authentication,
@@ -87,6 +106,10 @@ public class TripController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Get a trip",
+            description = "Returns a specific trip owned by the authenticated user."
+    )
     @GetMapping("/{id:\\d+}")
     public ResponseEntity<ApiResponse<TripResponse>> getTripById(
             Authentication authentication,
@@ -109,6 +132,10 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(
+            summary = "Update a trip",
+            description = "Updates a trip owned by the authenticated user."
+    )
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TripResponse>> updateTrip(
             Authentication authentication,
@@ -133,6 +160,10 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(
+            summary = "Delete a trip",
+            description = "Deletes a trip owned by the authenticated user."
+    )
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTrip(
             Authentication authentication,
@@ -154,6 +185,10 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Operation(
+            summary = "Archive a trip",
+            description = "Archives a trip owned by the authenticated user."
+    )
     @PatchMapping("/{id}/archive")
     public ResponseEntity<ApiResponse<TripResponse>> archiveTrip(
             Authentication authentication,

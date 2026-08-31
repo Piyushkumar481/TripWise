@@ -4,7 +4,11 @@ import com.tripwise.backend.dto.ApiResponse;
 import com.tripwise.backend.dto.DocumentResponse;
 import com.tripwise.backend.entity.DocumentType;
 import com.tripwise.backend.service.interfaces.DocumentService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +21,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trips/{tripId}/documents")
 @RequiredArgsConstructor
+@Tag(
+        name = "Documents",
+        description = "Trip document management APIs"
+)
 public class DocumentController {
 
     private final DocumentService documentService;
