@@ -1,5 +1,8 @@
 package com.tripwise.backend.exception;
 
+import com.tripwise.backend.dto.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -7,198 +10,162 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Object>> handleAlreadyExists(
-            ResourceAlreadyExistsException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleAlreadyExists(
+            ResourceAlreadyExistsException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(response);
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleValidation(
+            MethodArgumentNotValidException exception) {
 
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error ->
-                        errors.put(
-                                error.getField(),
-                                error.getDefaultMessage()
+        String message =
+                exception.getBindingResult()
+                        .getFieldErrors()
+                        .stream()
+                        .map(error ->
+                                error.getField()
+                                        + ": "
+                                        + error.getDefaultMessage()
                         )
-                );
+                        .collect(Collectors.joining(", "));
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", "Validation failed");
-        response.put("errors", errors);
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity.badRequest()
-                .body(response);
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                message
+        );
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(
-            InvalidCredentialsException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleInvalidCredentials(
+            InvalidCredentialsException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(response);
+        return buildResponse(
+                HttpStatus.UNAUTHORIZED,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-            IllegalArgumentException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
+            IllegalArgumentException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity.badRequest()
-                .body(response);
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(TripNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleTripNotFound(
-            TripNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleTripNotFound(
+            TripNotFoundException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(InvalidTripDateException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidTripDate(
-            InvalidTripDateException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleInvalidTripDate(
+            InvalidTripDateException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(ExpenseNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleExpenseNotFound(
-            ExpenseNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleExpenseNotFound(
+            ExpenseNotFoundException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(InvalidFileException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidFile(
-            InvalidFileException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleInvalidFile(
+            InvalidFileException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(DocumentNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleDocumentNotFound(
-            DocumentNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleDocumentNotFound(
+            DocumentNotFoundException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(ItineraryItemNotFoundException.class)
-    public ResponseEntity<Map<String, Object>>
-    handleItineraryItemNotFound(
-            ItineraryItemNotFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleItineraryItemNotFound(
+            ItineraryItemNotFoundException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
     }
 
     @ExceptionHandler(InvalidItineraryException.class)
-    public ResponseEntity<Map<String, Object>>
-    handleInvalidItinerary(
-            InvalidItineraryException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleInvalidItinerary(
+            InvalidItineraryException exception) {
 
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
-
-        return ResponseEntity
-                .badRequest()
-                .body(response);
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(
-            RuntimeException ex) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(
+            Exception exception) {
 
-        Map<String, Object> response = new HashMap<>();
+        log.error(
+                "Unexpected application error",
+                exception
+        );
 
-        response.put("success", false);
-        response.put("message", ex.getMessage());
-        response.put("timestamp", LocalDateTime.now());
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred."
+        );
+    }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    private ResponseEntity<ApiResponse<Void>> buildResponse(
+            HttpStatus status,
+            String message) {
+
+        ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .success(false)
+                        .message(message)
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity
+                .status(status)
                 .body(response);
     }
 }

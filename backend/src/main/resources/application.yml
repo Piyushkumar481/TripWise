@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tripwise
-    username: postgres
-    password: Piyush@2004
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tripwise}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -24,6 +24,10 @@ jwt:
 file:
   storage:
     location: uploads
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
 
 server:
   port: 8080
