@@ -33,7 +33,7 @@ services:
         condition: service_healthy
 
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/tripwise
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
