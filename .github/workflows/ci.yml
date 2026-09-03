@@ -56,3 +56,5 @@ jobs:
         working-directory: backend
         run: mvn clean verify
 
+      - name: Build Docker image
+        run: docker build -t tripwise-backend:ci ./backend
