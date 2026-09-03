@@ -1,14 +1,13 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tripwise_test
-    username: postgres
-    password: Piyush@2004
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tripwise_test}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: create-drop
-
     show-sql: false
 
   sql:
