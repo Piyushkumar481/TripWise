@@ -71,7 +71,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/tripwise-backend
+          images: ghcr.io/piyushkumar481/tripwise-backend
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -79,5 +79,6 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/tripwise-backend:latest
-            ghcr.io/${{ github.repository_owner }}/tripwise-backend:${{ github.sha }}
+            ghcr.io/piyushkumar481/tripwise-backend:latest
+            ghcr.io/piyushkumar481/tripwise-backend:${{ github.sha }}
+
