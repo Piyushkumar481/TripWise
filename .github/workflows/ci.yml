@@ -35,7 +35,7 @@ jobs:
       DB_URL: jdbc:postgresql://localhost:5432/tripwise_test
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      JWT_SECRET: VGhpc0lzQUNJSTVlc3RTZWNyZXRGb3JUcmlwV2lzZQ==
+      JWT_SECRET: Dlsok0mhIF8FzSZkRh8p+5esHWIWcloIAGqV+YhxnxU=
       JWT_EXPIRATION: 86400000
       CORS_ALLOWED_ORIGINS: http://localhost:5173
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
@@ -55,3 +55,4 @@ jobs:
       - name: Build and test backend
         working-directory: backend
         run: mvn clean verify
+
