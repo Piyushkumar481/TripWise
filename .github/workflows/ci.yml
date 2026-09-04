@@ -60,25 +60,34 @@ jobs:
         working-directory: backend
         run: mvn clean verify
 
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          load: true
+          tags: |
+            tripwise-backend:ci
+
       - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/piyushkumar481/tripwise-backend
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          push: true
-          tags: |
+      - name: Push Docker image to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker tag tripwise-backend:ci \
             ghcr.io/piyushkumar481/tripwise-backend:latest
+
+          docker tag tripwise-backend:ci \
             ghcr.io/piyushkumar481/tripwise-backend:${{ github.sha }}
 
+          docker push \
+            ghcr.io/piyushkumar481/tripwise-backend:latest
+
+          docker push \
+            ghcr.io/piyushkumar481/tripwise-backend:${{ github.sha }}
