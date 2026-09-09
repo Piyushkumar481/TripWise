@@ -42,3 +42,5 @@ Actuator health:
 Swagger:
 
     http://localhost:8080/swagger-ui/index.html
+
+TripWise CI/CD pipeline
