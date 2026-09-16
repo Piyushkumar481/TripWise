@@ -8,6 +8,8 @@ import com.tripwise.backend.service.interfaces.TripService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,12 +40,34 @@ class TripControllerTest {
     @WithMockUser(username = "user@example.com")
     void shouldGetMyTrips() throws Exception {
 
-        when(tripService.getMyTrips("user@example.com"))
-                .thenReturn(List.of());
+        Page<TripResponse> page = new PageImpl<>(List.of());
+
+        when(tripService.getMyTrips(
+                "user@example.com",
+                0,
+                10,
+                "startDate",
+                "asc",
+                null,
+                null,
+                null,
+                null
+        )).thenReturn(page);
 
         mockMvc.perform(get("/api/trips"))
                 .andExpect(status().isOk());
 
-        verify(tripService).getMyTrips("user@example.com");
+        verify(tripService).getMyTrips(
+                "user@example.com",
+                0,
+                10,
+                "startDate",
+                "asc",
+                null,
+                null,
+                null,
+                null
+        );
     }
 }
+

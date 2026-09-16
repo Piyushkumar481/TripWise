@@ -1,5 +1,7 @@
 package com.tripwise.backend.dto;
 
+import com.tripwise.backend.validation.ValidTripDates;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
+@ValidTripDates
 public class TripRequest {
 
     @NotBlank(message = "Title is required")
