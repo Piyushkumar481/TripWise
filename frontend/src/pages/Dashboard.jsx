@@ -1,13 +1,24 @@
 function Dashboard() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-8">
-      <h1 className="text-4xl font-bold">
-        Dashboard
-      </h1>
+    <div className="p-4 sm:p-6 lg:p-8">
 
-      <p className="mt-3 text-slate-400">
-        Your travel overview will appear here.
-      </p>
+      <div className="mx-auto max-w-7xl">
+
+        <p className="text-sm font-medium text-cyan-400">
+          Welcome back
+        </p>
+
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          Your travel dashboard
+        </h1>
+
+        <p className="mt-3 max-w-2xl text-slate-400">
+          Keep track of your trips, expenses, itinerary, and travel plans
+          from one place.
+        </p>
+
+      </div>
+
     </div>
   )
 }
