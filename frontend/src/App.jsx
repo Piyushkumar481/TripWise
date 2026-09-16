@@ -1,13 +1,29 @@
-import PageTitle from "./components/PageTitle"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+
+import Home from "./pages/Home"
+import Login from "./pages/Login"
+import Register from "./pages/Register"
+import Dashboard from "./pages/Dashboard"
+import Trips from "./pages/Trips"
+import NotFound from "./pages/NotFound"
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-950 p-10">
-      <PageTitle
-        title="TripWise"
-        subtitle="Smart Travel Planning Platform"
-      />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+
+        <Route path="/login" element={<Login />} />
+
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        <Route path="/trips" element={<Trips />} />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
