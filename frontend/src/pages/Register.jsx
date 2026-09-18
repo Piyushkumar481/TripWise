@@ -1,4 +1,4 @@
-﻿import { useState } from "react"
+import { useState } from "react"
 import {
   ArrowRight,
   Check,
@@ -7,14 +7,101 @@ import {
   EyeOff,
   LockKeyhole,
   Mail,
+  Phone,
   Plane,
   Sparkles,
   User,
 } from "lucide-react"
 
+import { registerUser } from "../services/authService"
+
 function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  })
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+
+  const handleChange = (event) => {
+    const { name, value } = event.target
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }))
+
+    setError("")
+    setSuccess("")
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    setError("")
+    setSuccess("")
+
+    if (!formData.fullName.trim()) {
+      setError("Full name is required.")
+      return
+    }
+
+    if (!formData.email.trim()) {
+      setError("Email is required.")
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters.")
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const registerData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+      }
+
+      const response = await registerUser(registerData)
+
+      setSuccess(
+        response.message || "Account created successfully!"
+      )
+
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      })
+    } catch (err) {
+      const backendMessage =
+        err.response?.data?.message ||
+        "Registration failed. Please try again."
+
+      setError(backendMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#fbf8f5] text-[#28242b]">
@@ -34,10 +121,8 @@ function Register() {
 
       </div>
 
-
       {/* Top decorative line */}
       <div className="pointer-events-none absolute left-1/2 top-0 h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d98791]/40 to-transparent" />
-
 
       {/* Header */}
       <header className="relative z-20 flex items-center justify-between px-6 py-6 sm:px-10 lg:px-14">
@@ -67,7 +152,6 @@ function Register() {
 
         </a>
 
-
         <div className="hidden items-center gap-2 text-xs font-medium text-[#91878e] sm:flex">
 
           <span>Already planning?</span>
@@ -83,12 +167,10 @@ function Register() {
 
       </header>
 
-
       {/* Main content */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-89px)] max-w-7xl items-center px-5 pb-12 pt-5 sm:px-8 lg:px-12 xl:px-16">
 
         <div className="grid w-full items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 xl:gap-24">
-
 
           {/* Left content */}
           <section className="hidden lg:block">
@@ -110,7 +192,6 @@ function Register() {
 
             </div>
 
-
             <h1 className="max-w-xl text-6xl font-black leading-[0.98] tracking-[-0.055em] text-[#29242a] xl:text-7xl">
 
               Every journey
@@ -121,13 +202,11 @@ function Register() {
 
             </h1>
 
-
             <p className="mt-7 max-w-lg text-base leading-7 text-[#766d75] xl:text-lg xl:leading-8">
               Create your TripWise account and turn the places
               you've been dreaming about into journeys you'll
               never forget.
             </p>
-
 
             <div className="mt-9 flex items-center gap-4">
 
@@ -154,7 +233,6 @@ function Register() {
 
             </div>
 
-
             <div className="mt-10 grid max-w-lg grid-cols-3 gap-3">
 
               <div className="rounded-2xl border border-white bg-white/60 p-4 shadow-[0_12px_35px_rgba(85,64,70,0.06)] backdrop-blur-md">
@@ -171,7 +249,6 @@ function Register() {
 
               </div>
 
-
               <div className="rounded-2xl border border-white bg-white/60 p-4 shadow-[0_12px_35px_rgba(85,64,70,0.06)] backdrop-blur-md">
 
                 <p className="text-lg font-black text-[#9276b7]">
@@ -185,7 +262,6 @@ function Register() {
                 </p>
 
               </div>
-
 
               <div className="rounded-2xl border border-white bg-white/60 p-4 shadow-[0_12px_35px_rgba(85,64,70,0.06)] backdrop-blur-md">
 
@@ -205,7 +281,6 @@ function Register() {
 
           </section>
 
-
           {/* Register card */}
           <section className="flex justify-center lg:justify-end">
 
@@ -220,7 +295,6 @@ function Register() {
                 <div className="pointer-events-none absolute -right-28 -top-28 h-64 w-64 rounded-full bg-[#f5d1ca]/35 blur-3xl" />
 
                 <div className="pointer-events-none absolute -bottom-28 -left-28 h-64 w-64 rounded-full bg-[#ded6f1]/30 blur-3xl" />
-
 
                 <div className="relative">
 
@@ -242,7 +316,6 @@ function Register() {
 
                   </div>
 
-
                   {/* Heading */}
                   <div>
 
@@ -253,7 +326,6 @@ function Register() {
                       New journey
 
                     </div>
-
 
                     <h2 className="text-3xl font-black tracking-[-0.045em] text-[#2c262d] sm:text-4xl">
                       Create your account
@@ -266,18 +338,31 @@ function Register() {
 
                   </div>
 
+                  {/* Success message */}
+                  {success && (
+                    <div className="mt-6 rounded-2xl border border-[#c8e7df] bg-[#effaf6] px-4 py-3 text-sm font-medium text-[#4c8a7c]">
+                      {success}
+                    </div>
+                  )}
+
+                  {/* Error message */}
+                  {error && (
+                    <div className="mt-6 rounded-2xl border border-[#f0c8c8] bg-[#fff3f3] px-4 py-3 text-sm font-medium text-[#b45f68]">
+                      {error}
+                    </div>
+                  )}
 
                   {/* Form */}
                   <form
                     className="mt-7 space-y-4"
-                    onSubmit={(event) => event.preventDefault()}
+                    onSubmit={handleSubmit}
                   >
 
                     {/* Full name */}
                     <div>
 
                       <label
-                        htmlFor="name"
+                        htmlFor="fullName"
                         className="mb-2 block text-xs font-bold tracking-wide text-[#554c54]"
                       >
                         Full name
@@ -291,8 +376,11 @@ function Register() {
                         />
 
                         <input
-                          id="name"
+                          id="fullName"
+                          name="fullName"
                           type="text"
+                          value={formData.fullName}
+                          onChange={handleChange}
                           placeholder="What should we call you?"
                           className="h-12 w-full rounded-2xl border border-[#e9dfdb] bg-[#fffdfc] pl-11 pr-4 text-sm text-[#332d34] outline-none placeholder:text-[#b1a8ad] shadow-[0_4px_15px_rgba(70,52,58,0.03)] transition-all duration-300 hover:border-[#dccdc8] focus:border-[#d58a97] focus:bg-white focus:ring-4 focus:ring-[#eaa3ad]/12"
                         />
@@ -300,7 +388,6 @@ function Register() {
                       </div>
 
                     </div>
-
 
                     {/* Email */}
                     <div>
@@ -321,7 +408,10 @@ function Register() {
 
                         <input
                           id="email"
+                          name="email"
                           type="email"
+                          value={formData.email}
+                          onChange={handleChange}
                           placeholder="you@example.com"
                           className="h-12 w-full rounded-2xl border border-[#e9dfdb] bg-[#fffdfc] pl-11 pr-4 text-sm text-[#332d34] outline-none placeholder:text-[#b1a8ad] shadow-[0_4px_15px_rgba(70,52,58,0.03)] transition-all duration-300 hover:border-[#dccdc8] focus:border-[#d58a97] focus:bg-white focus:ring-4 focus:ring-[#eaa3ad]/12"
                         />
@@ -330,6 +420,39 @@ function Register() {
 
                     </div>
 
+                    {/* Phone */}
+                    <div>
+
+                      <label
+                        htmlFor="phone"
+                        className="mb-2 block text-xs font-bold tracking-wide text-[#554c54]"
+                      >
+                        Phone number
+                        <span className="ml-1 font-normal text-[#aaa0a7]">
+                          (optional)
+                        </span>
+                      </label>
+
+                      <div className="group relative">
+
+                        <Phone
+                          size={17}
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa0a7] transition group-focus-within:text-[#bd687a]"
+                        />
+
+                        <input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          placeholder="Your phone number"
+                          className="h-12 w-full rounded-2xl border border-[#e9dfdb] bg-[#fffdfc] pl-11 pr-4 text-sm text-[#332d34] outline-none placeholder:text-[#b1a8ad] shadow-[0_4px_15px_rgba(70,52,58,0.03)] transition-all duration-300 hover:border-[#dccdc8] focus:border-[#d58a97] focus:bg-white focus:ring-4 focus:ring-[#eaa3ad]/12"
+                        />
+
+                      </div>
+
+                    </div>
 
                     {/* Password */}
                     <div>
@@ -350,7 +473,10 @@ function Register() {
 
                         <input
                           id="password"
+                          name="password"
                           type={showPassword ? "text" : "password"}
+                          value={formData.password}
+                          onChange={handleChange}
                           placeholder="Create a password"
                           className="h-12 w-full rounded-2xl border border-[#e9dfdb] bg-[#fffdfc] pl-11 pr-12 text-sm text-[#332d34] outline-none placeholder:text-[#b1a8ad] shadow-[0_4px_15px_rgba(70,52,58,0.03)] transition-all duration-300 hover:border-[#dccdc8] focus:border-[#d58a97] focus:bg-white focus:ring-4 focus:ring-[#eaa3ad]/12"
                         />
@@ -365,13 +491,11 @@ function Register() {
                               : "Show password"
                           }
                         >
-
                           {showPassword ? (
                             <EyeOff size={17} />
                           ) : (
                             <Eye size={17} />
                           )}
-
                         </button>
 
                       </div>
@@ -385,7 +509,6 @@ function Register() {
                       </div>
 
                     </div>
-
 
                     {/* Confirm password */}
                     <div>
@@ -406,7 +529,14 @@ function Register() {
 
                         <input
                           id="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          type={
+                            showConfirmPassword
+                              ? "text"
+                              : "password"
+                          }
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
                           placeholder="Repeat your password"
                           className="h-12 w-full rounded-2xl border border-[#e9dfdb] bg-[#fffdfc] pl-11 pr-12 text-sm text-[#332d34] outline-none placeholder:text-[#b1a8ad] shadow-[0_4px_15px_rgba(70,52,58,0.03)] transition-all duration-300 hover:border-[#dccdc8] focus:border-[#d58a97] focus:bg-white focus:ring-4 focus:ring-[#eaa3ad]/12"
                         />
@@ -414,7 +544,9 @@ function Register() {
                         <button
                           type="button"
                           onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
+                            setShowConfirmPassword(
+                              !showConfirmPassword
+                            )
                           }
                           className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-2 text-[#a49aa1] transition hover:bg-[#faefed] hover:text-[#ad6073]"
                           aria-label={
@@ -423,19 +555,16 @@ function Register() {
                               : "Show password"
                           }
                         >
-
                           {showConfirmPassword ? (
                             <EyeOff size={17} />
                           ) : (
                             <Eye size={17} />
                           )}
-
                         </button>
 
                       </div>
 
                     </div>
-
 
                     {/* Terms */}
                     <div className="flex items-start gap-3 rounded-2xl border border-[#eee5e1] bg-[#fffdfb]/70 p-3">
@@ -456,28 +585,31 @@ function Register() {
 
                     </div>
 
-
                     {/* Submit */}
                     <button
                       type="submit"
-                      className="group relative flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#ef928b] via-[#df7d91] to-[#a587d4] text-sm font-bold text-white shadow-[0_16px_35px_rgba(202,116,137,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_45px_rgba(177,107,137,0.32)] active:translate-y-0"
+                      disabled={loading}
+                      className="group relative flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#ef928b] via-[#df7d91] to-[#a587d4] text-sm font-bold text-white shadow-[0_16px_35px_rgba(202,116,137,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_45px_rgba(177,107,137,0.32)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                     >
 
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
                       <span className="relative">
-                        Create my TripWise account
+                        {loading
+                          ? "Creating account..."
+                          : "Create my TripWise account"}
                       </span>
 
-                      <ArrowRight
-                        size={17}
-                        className="relative transition-transform duration-300 group-hover:translate-x-1"
-                      />
+                      {!loading && (
+                        <ArrowRight
+                          size={17}
+                          className="relative transition-transform duration-300 group-hover:translate-x-1"
+                        />
+                      )}
 
                     </button>
 
                   </form>
-
 
                   {/* Divider */}
                   <div className="my-6 flex items-center gap-3">
@@ -496,7 +628,6 @@ function Register() {
                     <div className="h-px flex-1 bg-[#eee4df]" />
 
                   </div>
-
 
                   {/* Login link */}
                   <p className="text-center text-xs text-[#8b8188]">
@@ -523,7 +654,6 @@ function Register() {
         </div>
 
       </div>
-
 
       {/* Mobile footer */}
       <div className="relative z-10 px-6 pb-8 text-center lg:hidden">
