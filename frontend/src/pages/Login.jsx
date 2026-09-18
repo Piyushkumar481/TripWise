@@ -1,4 +1,4 @@
-ï»¿import { useState } from "react"
+import { useState } from "react"
 import {
   ArrowRight,
   Eye,
@@ -18,9 +18,9 @@ function Login() {
 
       {/* Full-screen real travel background */}
       <img
-        src="https://images.unsplash.com/photo-1761047726527-6f263d10e09d?auto=format&fit=crop&w=3000&q=90"
+        src="https://images.unsplash.com/photo-1761047726527-6f263d10e09d?auto=format&fit=crop&w=1600&q=70"
         alt="Sailboats floating on clear turquoise ocean"
-        className="absolute inset-0 h-full w-full object-cover animate-[travelZoom_24s_ease-in-out_infinite]"
+        className="absolute inset-0 h-full w-full object-cover"
       />
 
       {/* Cinematic overlay */}
@@ -33,9 +33,9 @@ function Login() {
       <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#09232d]/65 to-transparent" />
 
       {/* Atmospheric glow */}
-      <div className="pointer-events-none absolute left-[52%] top-[20%] h-72 w-72 rounded-full bg-[#ffd3a8]/15 blur-[110px] animate-[sunGlow_8s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute left-[52%] top-[20%] h-72 w-72 rounded-full bg-[#ffd3a8]/15 blur-2xl" />
 
-      <div className="pointer-events-none absolute right-[10%] bottom-[12%] h-80 w-80 rounded-full bg-[#c8e9e4]/10 blur-[120px] animate-[softGlow_10s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute right-[10%] bottom-[12%] h-80 w-80 rounded-full bg-[#c8e9e4]/10 blur-2xl" />
 
 
       {/* Brand */}
@@ -72,7 +72,7 @@ function Login() {
 
         <div className="w-full max-w-[470px]">
 
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/45 bg-[#fffaf7]/90 p-6 shadow-[0_35px_100px_rgba(5,25,35,0.38)] backdrop-blur-2xl sm:p-9">
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/45 bg-[#fffaf7]/90 p-6 shadow-[0_35px_100px_rgba(5,25,35,0.38)]  sm:p-9">
 
             {/* Card decorative glow */}
             <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#ffc0a8]/25 blur-3xl" />
@@ -293,7 +293,7 @@ function Login() {
       <div className="absolute bottom-7 right-8 z-20 hidden text-right text-white/70 lg:block xl:right-12">
 
         <p className="text-xs uppercase tracking-[0.25em]">
-          Explore Â· Plan Â· Remember
+          Explore · Plan · Remember
         </p>
 
         <div className="mt-2 flex items-center justify-end gap-2 text-xs text-white/50">

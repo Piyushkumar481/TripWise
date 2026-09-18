@@ -109,15 +109,15 @@ function Register() {
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
 
-        <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#f6c8bd]/35 blur-[90px] animate-[registerGlow_9s_ease-in-out_infinite]" />
+        <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-[#f6c8bd]/35 blur-2xl" />
 
-        <div className="absolute -right-40 top-[8%] h-[500px] w-[500px] rounded-full bg-[#d9d0f4]/35 blur-[110px] animate-[registerGlowTwo_11s_ease-in-out_infinite]" />
+        <div className="absolute -right-40 top-[8%] h-80 w-80 rounded-full bg-[#d9d0f4]/35 blur-2xl" />
 
-        <div className="absolute -bottom-48 left-[35%] h-[500px] w-[500px] rounded-full bg-[#c8e7df]/30 blur-[110px]" />
+        <div className="absolute -bottom-48 left-[35%] h-80 w-80 rounded-full bg-[#c8e7df]/30 blur-3xl" />
 
-        <div className="absolute left-[8%] top-[30%] h-3 w-3 rounded-full bg-[#d9828f]/50 shadow-[0_0_25px_rgba(217,130,143,0.45)] animate-[floatSoft_6s_ease-in-out_infinite]" />
+        <div className="absolute left-[8%] top-[30%] h-3 w-3 rounded-full bg-[#d9828f]/50 shadow-[0_0_25px_rgba(217,130,143,0.45)] " />
 
-        <div className="absolute bottom-[24%] right-[12%] h-2 w-2 rounded-full bg-[#8d78bd]/45 shadow-[0_0_20px_rgba(141,120,189,0.4)] animate-[floatSoft_7s_ease-in-out_infinite_reverse]" />
+        <div className="absolute bottom-[24%] right-[12%] h-2 w-2 rounded-full bg-[#8d78bd]/45 shadow-[0_0_20px_rgba(141,120,189,0.4)] " />
 
       </div>
 
@@ -286,7 +286,7 @@ function Register() {
 
             <div className="w-full max-w-[520px]">
 
-              <div className="relative overflow-hidden rounded-[2.25rem] border border-white bg-white/80 p-6 shadow-[0_35px_90px_rgba(67,48,58,0.13)] backdrop-blur-2xl sm:p-9">
+              <div className="relative overflow-hidden rounded-[2.25rem] border border-white bg-white/80 p-6 shadow-[0_35px_90px_rgba(67,48,58,0.13)]  sm:p-9">
 
                 {/* Card top accent */}
                 <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#f1a49b] via-[#d98091] to-[#a58bd2]" />
