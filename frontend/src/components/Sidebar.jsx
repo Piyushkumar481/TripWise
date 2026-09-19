@@ -1,4 +1,4 @@
-﻿import {
+import {
   CalendarDays,
   CheckSquare,
   FileText,
@@ -10,6 +10,9 @@
   Wallet,
   X,
 } from "lucide-react"
+
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 
 const navigationItems = [
   {
@@ -50,6 +53,18 @@ const navigationItems = [
 ]
 
 function Sidebar({ isOpen, onClose }) {
+  const navigate = useNavigate()
+
+  const {
+    user,
+    logout,
+  } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login", { replace: true })
+  }
+
   return (
     <>
       {/* Mobile overlay */}
@@ -75,7 +90,7 @@ function Sidebar({ isOpen, onClose }) {
 
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-400/20">
-              <span className="text-lg">✈</span>
+              <span className="text-lg">?</span>
             </div>
 
             <span className="text-lg font-bold tracking-tight text-white">
@@ -129,6 +144,16 @@ function Sidebar({ isOpen, onClose }) {
         {/* Bottom section */}
         <div className="border-t border-white/10 p-4">
 
+          <div className="mb-3 px-3">
+            <p className="truncate text-sm font-medium text-white">
+              {user?.fullName || "Traveler"}
+            </p>
+
+            <p className="truncate text-xs text-slate-400">
+              {user?.email || ""}
+            </p>
+          </div>
+
           <a
             href="/settings"
             onClick={onClose}
@@ -139,6 +164,8 @@ function Sidebar({ isOpen, onClose }) {
           </a>
 
           <button
+            type="button"
+            onClick={handleLogout}
             className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-red-500/10 hover:text-red-400"
           >
             <LogOut size={19} />
@@ -153,4 +180,3 @@ function Sidebar({ isOpen, onClose }) {
 }
 
 export default Sidebar
-

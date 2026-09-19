@@ -1,4 +1,11 @@
-import { createContext, useContext, useState } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
+
+import { getCurrentUser } from "../services/authService"
 
 const AuthContext = createContext()
 
@@ -6,18 +13,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("tripwise_user")
 
-    return storedUser ? JSON.parse(storedUser) : null
+    return storedUser
+      ? JSON.parse(storedUser)
+      : null
   })
 
   const [token, setToken] = useState(() => {
     return localStorage.getItem("tripwise_token")
   })
 
+  const [loading, setLoading] = useState(true)
+
   const login = (loginData) => {
     const receivedToken = loginData.data.token
     const receivedUser = loginData.data.user
 
-    localStorage.setItem("tripwise_token", receivedToken)
+    localStorage.setItem(
+      "tripwise_token",
+      receivedToken
+    )
+
     localStorage.setItem(
       "tripwise_user",
       JSON.stringify(receivedUser)
@@ -35,6 +50,39 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await getCurrentUser()
+
+        const currentUser = response.data
+
+        setUser(currentUser)
+
+        localStorage.setItem(
+          "tripwise_user",
+          JSON.stringify(currentUser)
+        )
+      } catch (error) {
+        console.error(
+          "Failed to load current user:",
+          error
+        )
+
+        logout()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadCurrentUser()
+  }, [token])
+
   const isAuthenticated = !!token
 
   return (
@@ -42,6 +90,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         token,
+        loading,
         isAuthenticated,
         login,
         logout,

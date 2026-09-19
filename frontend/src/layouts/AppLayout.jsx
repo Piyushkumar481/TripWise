@@ -1,9 +1,10 @@
 import { useState } from "react"
+import { Outlet } from "react-router-dom"
 
 import Navbar from "../components/Navbar"
 import Sidebar from "../components/Sidebar"
 
-function AppLayout({ children }) {
+function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -23,7 +24,7 @@ function AppLayout({ children }) {
           />
 
           <main className="flex-1">
-            {children}
+            <Outlet />
           </main>
 
         </div>
