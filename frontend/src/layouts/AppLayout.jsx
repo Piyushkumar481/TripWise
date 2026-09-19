@@ -8,7 +8,7 @@ function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-[#f7f5ef] text-[#17233c]">
 
       <div className="flex min-h-screen">
 
@@ -23,7 +23,7 @@ function AppLayout() {
             onMenuClick={() => setSidebarOpen(true)}
           />
 
-          <main className="flex-1">
+          <main className="min-h-0 flex-1 p-4 sm:p-6 lg:p-8">
             <Outlet />
           </main>
 
@@ -36,3 +36,4 @@ function AppLayout() {
 }
 
 export default AppLayout
+
