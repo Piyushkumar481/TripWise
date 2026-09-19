@@ -3,29 +3,39 @@ package com.tripwise.backend.controller;
 import com.tripwise.backend.dto.ApiResponse;
 import com.tripwise.backend.dto.TripRequest;
 import com.tripwise.backend.dto.TripResponse;
+import org.springframework.data.domain.Page;
 import com.tripwise.backend.service.interfaces.TripService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
+@Validated
 @Tag(
         name = "Trips",
         description = "Trip management APIs"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class TripController {
 
     private final TripService tripService;
@@ -53,7 +63,7 @@ public class TripController {
                         .timestamp(LocalDateTime.now())
                         .build();
 
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
     @Operation(
@@ -61,23 +71,43 @@ public class TripController {
             description = "Returns all trips belonging to the authenticated user."
     )
     @GetMapping
-    public ResponseEntity<ApiResponse<List<TripResponse>>> getMyTrips(
-            Authentication authentication) {
+    public ResponseEntity<ApiResponse<Page<TripResponse>>> getMyTrips(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "startDate") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String destination,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDateFrom,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDateTo) {
 
-        List<TripResponse> response =
+        Page<TripResponse> trips =
                 tripService.getMyTrips(
-                        authentication.getName()
+                        authentication.getName(),
+                        page,
+                        size,
+                        sortBy,
+                        direction,
+                        search,
+                        destination,
+                        startDateFrom,
+                        startDateTo
                 );
 
-        ApiResponse<List<TripResponse>> apiResponse =
-                ApiResponse.<List<TripResponse>>builder()
+        ApiResponse<Page<TripResponse>> response =
+                ApiResponse.<Page<TripResponse>>builder()
                         .success(true)
                         .message("Trips retrieved successfully.")
-                        .data(response)
+                        .data(trips)
                         .timestamp(LocalDateTime.now())
                         .build();
 
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
@@ -165,7 +195,7 @@ public class TripController {
             description = "Deletes a trip owned by the authenticated user."
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteTrip(
+    public ResponseEntity<Void> deleteTrip(
             Authentication authentication,
             @PathVariable Long id) {
 
@@ -174,15 +204,7 @@ public class TripController {
                 id
         );
 
-        ApiResponse<Void> apiResponse =
-                ApiResponse.<Void>builder()
-                        .success(true)
-                        .message("Trip deleted successfully.")
-                        .data(null)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(
@@ -211,3 +233,15 @@ public class TripController {
         return ResponseEntity.ok(apiResponse);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+

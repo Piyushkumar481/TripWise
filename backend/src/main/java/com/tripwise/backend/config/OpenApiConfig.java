@@ -1,57 +1,25 @@
 package com.tripwise.backend.config;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springframework.context.annotation.Bean;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@OpenAPIDefinition(
+        info = @Info(
+                title = "TripWise API",
+                version = "1.0",
+                description = "Smart Travel Planning Platform API"
+        )
+)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
+)
 public class OpenApiConfig {
-
-    private static final String SECURITY_SCHEME_NAME =
-            "bearerAuth";
-
-    @Bean
-    public OpenAPI tripWiseOpenAPI() {
-
-        return new OpenAPI()
-                .info(
-                        new Info()
-                                .title("TripWise API")
-                                .version("1.0.0")
-                                .description(
-                                        "REST API for the TripWise "
-                                        + "Smart Travel Planning Platform."
-                                )
-                                .contact(
-                                        new Contact()
-                                                .name(
-                                                        "TripWise Development Team"
-                                                )
-                                )
-                )
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(SECURITY_SCHEME_NAME)
-                )
-                .components(
-                        new Components()
-                                .addSecuritySchemes(
-                                        SECURITY_SCHEME_NAME,
-                                        new SecurityScheme()
-                                                .name(
-                                                        SECURITY_SCHEME_NAME
-                                                )
-                                                .type(
-                                                        SecurityScheme.Type.HTTP
-                                                )
-                                                .scheme("bearer")
-                                                .bearerFormat("JWT")
-                                )
-                );
-    }
 }
