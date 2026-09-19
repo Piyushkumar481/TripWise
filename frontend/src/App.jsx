@@ -1,4 +1,8 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom"
 
 import Home from "./pages/Home"
 import Login from "./pages/Login"
@@ -8,47 +12,40 @@ import Trips from "./pages/Trips"
 import NotFound from "./pages/NotFound"
 
 import AppLayout from "./layouts/AppLayout"
+import ProtectedRoute from "./components/ProtectedRoute"
+import PublicRoute from "./components/PublicRoute"
 
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
-        {/* Public pages */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
         <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
 
-        <Route path="/register" element={<Register />} />
+            <Route
+              path="/dashboard"
+              element={<Dashboard />}
+            />
 
-        {/* Application pages */}
+            <Route
+              path="/trips"
+              element={<Trips />}
+            />
 
-        <Route
-          path="/dashboard"
-          element={
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          }
-        />
-
-        <Route
-          path="/trips"
-          element={
-            <AppLayout>
-              <Trips />
-            </AppLayout>
-          }
-        />
-
-        {/* 404 */}
+          </Route>
+        </Route>
 
         <Route path="*" element={<NotFound />} />
 
       </Routes>
-
     </BrowserRouter>
   )
 }
