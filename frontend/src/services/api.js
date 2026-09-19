@@ -22,4 +22,20 @@ api.interceptors.request.use(
   }
 )
 
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("tripwise_token")
+      localStorage.removeItem("tripwise_user")
+
+      window.location.href = "/login"
+    }
+
+    return Promise.reject(error)
+  }
+)
+
 export default api

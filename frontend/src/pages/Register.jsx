@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import { registerUser } from "../services/authService"
+import { getApiErrorMessage } from "../utils/errorHandler"
 
 function Register() {
   const [showPassword, setShowPassword] = useState(false)
@@ -93,11 +94,12 @@ function Register() {
         confirmPassword: "",
       })
     } catch (err) {
-      const backendMessage =
-        err.response?.data?.message ||
-        "Registration failed. Please try again."
-
-      setError(backendMessage)
+      setError(
+        getApiErrorMessage(
+          err,
+          "Registration failed. Please try again."
+        )
+      )
     } finally {
       setLoading(false)
     }
@@ -669,3 +671,5 @@ function Register() {
 }
 
 export default Register
+
+

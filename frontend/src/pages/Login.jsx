@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { loginUser } from "../services/authService"
+import { getApiErrorMessage } from "../utils/errorHandler"
 import { useAuth } from "../context/AuthContext"
 
 function Login() {
@@ -59,13 +60,14 @@ function Login() {
 
       login(response)
 
-      navigate("/dashboard")
+      navigate("/trips")
     } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Login failed. Please check your email and password."
-
-      setError(message)
+      setError(
+        getApiErrorMessage(
+          error,
+          "Login failed. Please check your email and password."
+        )
+      )
     } finally {
       setLoading(false)
     }
@@ -325,3 +327,6 @@ function Login() {
 }
 
 export default Login
+
+
+
