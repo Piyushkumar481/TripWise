@@ -9,6 +9,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
+import CreateTrip from "./pages/CreateTrip"
 import NotFound from "./pages/NotFound"
 
 import AppLayout from "./layouts/AppLayout"
@@ -21,11 +22,21 @@ function App() {
       <Routes>
 
         <Route element={<PublicRoute />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+          <Route
+            path="/register"
+            element={<Register />}
+          />
         </Route>
 
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
@@ -40,10 +51,18 @@ function App() {
               element={<Trips />}
             />
 
+            <Route
+              path="/trips/new"
+              element={<CreateTrip />}
+            />
+
           </Route>
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
 
       </Routes>
     </BrowserRouter>
