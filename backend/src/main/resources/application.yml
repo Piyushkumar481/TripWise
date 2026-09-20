@@ -2,14 +2,23 @@ spring:
   application:
     name: tripwise
 
+  profiles:
+    active: dev
+
   jpa:
     open-in-view: false
 
   flyway:
     enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
 
 server:
   port: 8080
+
+jwt:
+  secret: tripwise-local-development-secret-key-2026-change-this
+  expiration: 86400000
 
 logging:
   level:

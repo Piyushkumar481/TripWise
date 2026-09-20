@@ -1,62 +1,106 @@
-﻿import { Bell, Menu, User } from "lucide-react"
+import {
+  Bell,
+  ChevronDown,
+  Menu,
+  Search,
+  Sprout,
+} from "lucide-react"
+
+import { useAuth } from "../context/AuthContext"
 
 function Navbar({ onMenuClick }) {
+  const { user } = useAuth()
+
+  const firstName =
+    user?.fullName?.split(" ")[0] || "Traveler"
+
   return (
-    <header className="sticky top-0 z-40 h-16 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
-      <div className="flex h-full items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-40 h-[76px] border-b border-[#e6eae6] bg-white">
 
-        {/* Mobile menu + logo */}
-        <div className="flex items-center gap-3">
+      <div className="flex h-full items-center justify-between px-5 sm:px-7 lg:px-9">
 
-          <button
-            onClick={onMenuClick}
-            className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10 hover:text-white lg:hidden"
-            aria-label="Open navigation"
-          >
-            <Menu size={22} />
-          </button>
+        {/* MOBILE MENU */}
+        <button
+          onClick={onMenuClick}
+          className="rounded-xl p-2 text-[#596777] transition hover:bg-[#f1f5f3] lg:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu size={22} />
+        </button>
 
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/10 ring-1 ring-cyan-400/20">
-              <span className="text-lg">✈</span>
-            </div>
+        {/* TRAVEL MESSAGE */}
+        <div className="hidden items-center gap-3 md:flex">
 
-            <span className="text-lg font-bold tracking-tight text-white">
-              Trip<span className="text-cyan-400">Wise</span>
-            </span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8f7f5] text-[#159b9b]">
+            <Sprout size={19} />
           </div>
+
+          <p className="font-serif text-[17px] italic text-[#49627a]">
+            Travel far enough, you meet yourself.
+          </p>
 
         </div>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2">
+        {/* RIGHT SIDE */}
+        <div className="ml-auto flex items-center gap-3">
 
+          {/* SEARCH */}
+          <div className="hidden h-11 w-[315px] items-center gap-3 rounded-full border border-[#e0e5e1] bg-[#fbfcfb] px-5 lg:flex">
+
+            <Search
+              size={19}
+              className="text-[#718090]"
+            />
+
+            <input
+              type="text"
+              placeholder="Search destinations, trips..."
+              className="w-full bg-transparent text-sm text-[#17233c] outline-none placeholder:text-[#9ba3ad]"
+            />
+
+          </div>
+
+          {/* NOTIFICATION */}
           <button
-            className="rounded-xl p-2.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="relative rounded-xl p-2.5 text-[#657383] transition hover:bg-[#f1f5f3]"
             aria-label="Notifications"
           >
-            <Bell size={20} />
+
+            <Bell size={21} />
+
+            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#ef806d] ring-2 ring-white" />
+
           </button>
 
+          <div className="hidden h-7 w-px bg-[#e5e9e5] sm:block" />
+
+          {/* PROFILE */}
           <button
-            className="flex items-center gap-2 rounded-xl p-1.5 transition hover:bg-white/10"
+            className="flex items-center gap-2.5 rounded-full px-1.5 py-1 transition hover:bg-[#f4f6f4]"
             aria-label="Profile"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/10 ring-1 ring-cyan-400/20">
-              <User size={18} className="text-cyan-400" />
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e3e8ff] text-sm font-black text-[#4659aa]">
+              {(user?.fullName || "T").charAt(0).toUpperCase()}
             </div>
 
-            <span className="hidden text-sm font-medium text-slate-300 sm:block">
-              Profile
+            <span className="hidden text-sm font-bold text-[#17233c] sm:block">
+              {firstName}
             </span>
+
+            <ChevronDown
+              size={16}
+              className="hidden text-[#75808c] sm:block"
+            />
+
           </button>
 
         </div>
 
       </div>
+
     </header>
   )
 }
 
 export default Navbar
-
