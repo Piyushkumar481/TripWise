@@ -312,7 +312,7 @@ function Login() {
       <div className="absolute bottom-7 right-8 z-20 hidden text-right text-white/70 lg:block xl:right-12">
 
         <p className="text-xs uppercase tracking-[0.25em]">
-          Explore · Plan · Remember
+          Explore â•– Plan â•– Remember
         </p>
 
         <div className="mt-2 flex items-center justify-end gap-2 text-xs text-white/50">

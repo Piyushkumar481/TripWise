@@ -415,6 +415,7 @@ function Trips() {
 
                     <button
                       type="button"
+                      onClick={() => navigate(`/trips/${trip.id}`)}
                       className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#dfe5e1] py-2.5 text-sm font-bold text-[#637182] transition hover:border-[#b9dcd7] hover:bg-[#eaf7f5] hover:text-[#087f82]"
                     >
                       View Trip
@@ -520,3 +521,4 @@ function FeatureCard({
 }
 
 export default Trips
+

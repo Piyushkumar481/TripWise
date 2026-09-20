@@ -10,6 +10,7 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
 import CreateTrip from "./pages/CreateTrip"
+import TripDetails from "./pages/TripDetails"
 import NotFound from "./pages/NotFound"
 
 import AppLayout from "./layouts/AppLayout"
@@ -54,6 +55,11 @@ function App() {
             <Route
               path="/trips/new"
               element={<CreateTrip />}
+            />
+
+            <Route
+              path="/trips/:id"
+              element={<TripDetails />}
             />
 
           </Route>
