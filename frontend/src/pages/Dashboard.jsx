@@ -1,4 +1,5 @@
-﻿import { ArrowRight } from "lucide-react"
+﻿import { useEffect, useMemo, useState } from "react"
+import { ArrowRight } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import DashboardHero from "../components/DashboardHero"
@@ -7,15 +8,104 @@ import StatCard from "../components/StatCard"
 import UpcomingTrips from "../components/UpcomingTrips"
 import TravelInspiration from "../components/TravelInspiration"
 
+import { getTrips } from "../services/tripService"
+import { getApiErrorMessage } from "../utils/errorHandler"
+
 function Dashboard() {
   const navigate = useNavigate()
 
-  const emptyValue = String.fromCharCode(8212)
+  const [trips, setTrips] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        setLoading(true)
+        setError("")
+
+        const response = await getTrips({
+          page: 0,
+          size: 100,
+          sortBy: "startDate",
+          sortDirection: "asc",
+        })
+
+        setTrips(response?.data?.content || [])
+      } catch (error) {
+        console.error("Failed to load dashboard trips:", error)
+
+        setError(
+          getApiErrorMessage(
+            error,
+            "Unable to load your trips."
+          )
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTrips()
+  }, [])
+
+  const dashboardStats = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const upcomingTrips = trips.filter((trip) => {
+      if (!trip.startDate) {
+        return false
+      }
+
+      const startDate = new Date(`${trip.startDate}T00:00:00`)
+
+      return startDate >= today
+    })
+
+    const activeTrips = trips.filter((trip) => {
+      const start = trip.startDate
+        ? new Date(`${trip.startDate}T00:00:00`)
+        : null
+
+      const end = trip.endDate
+        ? new Date(`${trip.endDate}T23:59:59`)
+        : null
+
+      return start && end && start <= today && end >= today
+    })
+
+    const totalBudget = trips.reduce((total, trip) => {
+      return total + Number(trip.budget || 0)
+    }, 0)
+
+    return {
+      totalTrips: trips.length,
+      upcomingTrips: upcomingTrips.length,
+      activeTrips: activeTrips.length,
+      totalBudget,
+      upcomingTripList: upcomingTrips.slice(0, 3),
+    }
+  }, [trips])
+
+  const formatBudget = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-8">
 
       <DashboardHero />
+
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          {error}
+        </div>
+      )}
 
       <section>
 
@@ -36,29 +126,33 @@ function Dashboard() {
           <StatCard
             type="trips"
             label="Total Trips"
-            value={emptyValue}
+            value={loading ? "—" : dashboardStats.totalTrips}
             description="Journeys planned"
           />
 
           <StatCard
             type="countries"
-            label="Countries Visited"
-            value={emptyValue}
-            description="Destinations explored"
+            label="Upcoming Trips"
+            value={loading ? "—" : dashboardStats.upcomingTrips}
+            description="Future journeys"
           />
 
           <StatCard
             type="budget"
             label="Total Budget"
-            value={emptyValue}
+            value={
+              loading
+                ? "—"
+                : formatBudget(dashboardStats.totalBudget)
+            }
             description="Across your trips"
           />
 
           <StatCard
             type="expenses"
-            label="Total Expenses"
-            value={emptyValue}
-            description="Tracked spending"
+            label="Active Trips"
+            value={loading ? "—" : dashboardStats.activeTrips}
+            description="Trips happening now"
           />
 
         </div>
@@ -85,7 +179,10 @@ function Dashboard() {
             </button>
           }
         >
-          <UpcomingTrips />
+          <UpcomingTrips
+            trips={dashboardStats.upcomingTripList}
+            loading={loading}
+          />
         </DashboardSection>
 
         <TravelInspiration />
