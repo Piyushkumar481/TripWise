@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react"
 
 import {
+  AlertTriangle,
   ArrowLeft,
   CalendarDays,
   Clock3,
@@ -8,13 +9,16 @@ import {
   Globe2,
   MapPin,
   MoreVertical,
+  Trash2,
   Wallet,
 } from "lucide-react"
 
 import { useNavigate, useParams } from "react-router-dom"
 
 import api from "../services/api"
+import { deleteTrip } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
+import ConfirmModal from "../components/ConfirmModal"
 
 function TripDetails() {
   const { id } = useParams()
@@ -23,6 +27,10 @@ function TripDetails() {
   const [trip, setTrip] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
 
   useEffect(() => {
     const loadTrip = async () => {
@@ -49,6 +57,28 @@ function TripDetails() {
 
     loadTrip()
   }, [id])
+
+  const handleDeleteTrip = async () => {
+    setDeleting(true)
+    setDeleteError("")
+
+    try {
+      await deleteTrip(id)
+
+      navigate("/trips", {
+        replace: true,
+      })
+    } catch (error) {
+      setDeleteError(
+        getApiErrorMessage(
+          error,
+          "Unable to delete this trip. Please try again."
+        )
+      )
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const formatDate = (date) => {
     if (!date) return "Not set"
@@ -213,6 +243,18 @@ function TripDetails() {
 
         <button
           type="button"
+          onClick={() => {
+            setDeleteError("")
+            setDeleteModalOpen(true)
+          }}
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-500 transition hover:border-red-300 hover:bg-red-100 hover:text-red-600"
+        >
+          <Trash2 size={17} />
+          Delete trip
+        </button>
+
+        <button
+          type="button"
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#dfe5e1] bg-white px-4 py-3 text-[#7b8794] shadow-[0_5px_18px_rgba(23,35,60,0.03)] transition hover:border-[#d5dcd8] hover:text-[#17233c]"
           aria-label="More trip options"
         >
@@ -336,6 +378,34 @@ function TripDetails() {
         </div>
 
       </section>
+
+      {deleteError && (
+        <div className="fixed bottom-6 left-1/2 z-[110] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-medium text-red-600 shadow-xl">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            <span>{deleteError}</span>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete this trip?"
+        message={
+          trip
+            ? `You're about to permanently delete "${trip.title}". All information associated with this trip will no longer be available.`
+            : "You're about to permanently delete this trip."
+        }
+        confirmText="Delete Trip"
+        cancelText="Keep Trip"
+        loading={deleting}
+        onCancel={() => {
+          if (!deleting) {
+            setDeleteModalOpen(false)
+          }
+        }}
+        onConfirm={handleDeleteTrip}
+      />
 
     </div>
   )

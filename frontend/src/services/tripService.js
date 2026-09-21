@@ -1,4 +1,4 @@
-import api from "./api"
+﻿import api from "./api"
 
 export const getTrips = async ({
   page = 0,
@@ -56,7 +56,8 @@ export const updateTrip = async (id, tripData) => {
 }
 
 export const deleteTrip = async (id) => {
-  await api.delete(`/api/trips/${id}`)
+  const response = await api.delete(`/api/trips/${id}`)
+  return response
 }
 
 export const archiveTrip = async (id) => {
