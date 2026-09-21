@@ -1,4 +1,4 @@
-import {
+﻿import {
   BrowserRouter,
   Routes,
   Route,
@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
 import CreateTrip from "./pages/CreateTrip"
 import TripDetails from "./pages/TripDetails"
+import EditTrip from "./pages/EditTrip"
 import NotFound from "./pages/NotFound"
 
 import AppLayout from "./layouts/AppLayout"
@@ -55,6 +56,11 @@ function App() {
             <Route
               path="/trips/new"
               element={<CreateTrip />}
+            />
+
+            <Route
+              path="/trips/:id/edit"
+              element={<EditTrip />}
             />
 
             <Route
