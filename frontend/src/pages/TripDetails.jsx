@@ -16,6 +16,10 @@ import {
   getTripStatusStyles,
 } from "../utils/tripUtils"
 
+import TripWorkspaceCard from "../components/trip/TripWorkspaceCard"
+import TripWorkspaceSection from "../components/trip/TripWorkspaceSection"
+import TripEmptyState from "../components/trip/TripEmptyState"
+
 function TripDetails() {
   const { trip } = useOutletContext()
   const navigate = useNavigate()
@@ -244,86 +248,68 @@ function TripDetails() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-[#17233c]">
-            Trip workspace
-          </h3>
-
-          <p className="mt-1 text-sm text-[#71808d]">
-            Manage every part of your journey from one place.
-          </p>
-        </div>
-
+      <TripWorkspaceSection
+        eyebrow="Workspace"
+        title="Manage your journey"
+        description="Manage every part of your journey from one place."
+      >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <WorkspaceCard
+          <TripWorkspaceCard
             icon={CalendarDays}
             title="Itinerary"
             description="Plan activities and organize each day."
             onClick={() =>
-              navigate(
-                `/trips/${trip.id}/itinerary`
-              )
+              navigate(`/trips/${trip.id}/itinerary`)
             }
           />
 
-          <WorkspaceCard
+          <TripWorkspaceCard
             icon={Wallet}
             title="Expenses"
             description="Track spending and stay within budget."
             onClick={() =>
-              navigate(
-                `/trips/${trip.id}/expenses`
-              )
+              navigate(`/trips/${trip.id}/expenses`)
             }
           />
 
-          <WorkspaceCard
+          <TripWorkspaceCard
             icon={FileText}
             title="Documents"
             description="Keep important travel documents organized."
             onClick={() =>
-              navigate(
-                `/trips/${trip.id}/documents`
-              )
+              navigate(`/trips/${trip.id}/documents`)
             }
           />
 
-          <WorkspaceCard
+          <TripWorkspaceCard
             icon={Package}
             title="Packing"
             description="Prepare everything you need before leaving."
             onClick={() =>
-              navigate(
-                `/trips/${trip.id}/packing`
-              )
+              navigate(`/trips/${trip.id}/packing`)
             }
           />
         </div>
-      </section>
+      </TripWorkspaceSection>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <OverviewEmptyCard
+        <TripEmptyState
           icon={CalendarDays}
           title="Upcoming itinerary"
           description="Your planned activities will appear here once you start building your itinerary."
           actionLabel="Plan itinerary"
-          onClick={() =>
-            navigate(
-              `/trips/${trip.id}/itinerary`
-            )
+          onAction={() =>
+            navigate(`/trips/${trip.id}/itinerary`)
           }
         />
 
-        <OverviewEmptyCard
+        <TripEmptyState
           icon={Wallet}
           title="Expense summary"
           description="Your expense breakdown will appear here once you start tracking trip spending."
           actionLabel="Add expenses"
-          onClick={() =>
-            navigate(
-              `/trips/${trip.id}/expenses`
-            )
+          onAction={() =>
+            navigate(`/trips/${trip.id}/expenses`)
           }
         />
       </section>
@@ -360,72 +346,7 @@ function OverviewStatCard({
   )
 }
 
-function WorkspaceCard({
-  icon: Icon,
-  title,
-  description,
-  onClick,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group rounded-2xl border border-[#e1e7e3] bg-white p-5 text-left shadow-[0_7px_25px_rgba(23,35,60,0.035)] transition hover:-translate-y-0.5 hover:border-[#b9dfda] hover:shadow-[0_10px_30px_rgba(23,35,60,0.06)]"
-    >
-      <div className="flex items-start justify-between">
-        <div className="rounded-xl bg-[#e8f7f5] p-2.5">
-          <Icon className="h-5 w-5 text-[#087f82]" />
-        </div>
-
-        <ArrowRight className="h-4 w-4 text-[#a4afb7] transition group-hover:translate-x-1 group-hover:text-[#087f82]" />
-      </div>
-
-      <h4 className="mt-5 font-semibold text-[#17233c]">
-        {title}
-      </h4>
-
-      <p className="mt-2 text-sm leading-6 text-[#71808d]">
-        {description}
-      </p>
-    </button>
-  )
-}
-
-function OverviewEmptyCard({
-  icon: Icon,
-  title,
-  description,
-  actionLabel,
-  onClick,
-}) {
-  return (
-    <div className="rounded-2xl border border-[#e1e7e3] bg-white p-6 shadow-[0_7px_25px_rgba(23,35,60,0.035)]">
-      <div className="flex items-start gap-4">
-        <div className="rounded-xl bg-[#f1f5f3] p-3">
-          <Icon className="h-5 w-5 text-[#71808d]" />
-        </div>
-
-        <div className="min-w-0">
-          <h4 className="font-semibold text-[#17233c]">
-            {title}
-          </h4>
-
-          <p className="mt-2 text-sm leading-6 text-[#71808d]">
-            {description}
-          </p>
-
-          <button
-            type="button"
-            onClick={onClick}
-            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#087f82] transition hover:text-[#065f62]"
-          >
-            {actionLabel}
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default TripDetails
+
+
+
