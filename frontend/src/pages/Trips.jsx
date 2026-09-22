@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom"
 
 import { getTrips } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
+import { getTripStatus, getTripStatusStyles } from "../utils/tripUtils"
 
 function Trips() {
   const navigate = useNavigate()
@@ -101,7 +102,7 @@ function Trips() {
   const formatDate = (date) => {
     if (!date) return "No date"
 
-    return new Date(date).toLocaleDateString(
+    return new Date(`${date}T00:00:00`).toLocaleDateString(
       "en-IN",
       {
         day: "numeric",
@@ -122,24 +123,6 @@ function Trips() {
     return `?${Number(budget).toLocaleString("en-IN")}`
   }
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "PLANNED":
-        return "border-[#b9dfda] bg-[#eaf8f6] text-[#087f82]"
-
-      case "ONGOING":
-        return "border-[#b9dfc8] bg-[#edf9f1] text-[#198154]"
-
-      case "COMPLETED":
-        return "border-[#cbd4f1] bg-[#eef1ff] text-[#5369b7]"
-
-      case "CANCELLED":
-        return "border-[#f1cbc5] bg-[#fff1ef] text-[#c96556]"
-
-      default:
-        return "border-[#dce3df] bg-[#f4f6f4] text-[#687583]"
-    }
-  }
 
   return (
     <div className="mx-auto max-w-[1450px] space-y-7">
@@ -363,14 +346,18 @@ function Trips() {
 
                     <div className="absolute inset-0 bg-gradient-to-br from-[#d8f0ec] via-[#edf8f6] to-[#f5eadb]" />
 
-                    <span
-                      className={`absolute left-5 top-5 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] ${getStatusStyle(
-                        trip.status
-                      )}`}
-                    >
-                      {trip.status ||
-                        "PLANNED"}
-                    </span>
+                    {(() => {
+                      const status = getTripStatus(trip)
+                      const statusStyles = getTripStatusStyles(status)
+
+                      return (
+                        <span
+                          className={`absolute left-5 top-5 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] ${statusStyles.badge}`}
+                        >
+                          {statusStyles.label}
+                        </span>
+                      )
+                    })()}
 
                     <div className="absolute bottom-5 left-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/80 text-[#159b9b] backdrop-blur-sm">
                       <MapPin size={20} />
@@ -547,4 +534,3 @@ function FeatureCard({
 }
 
 export default Trips
-

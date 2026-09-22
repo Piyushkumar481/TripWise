@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
@@ -10,6 +10,7 @@ import TravelInspiration from "../components/TravelInspiration"
 
 import { getTrips } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
+import { getTripStatus } from "../utils/tripUtils"
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -50,30 +51,22 @@ function Dashboard() {
   }, [])
 
   const dashboardStats = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const tripsWithStatus = trips.map((trip) => ({
+      trip,
+      status: getTripStatus(trip),
+    }))
 
-    const upcomingTrips = trips.filter((trip) => {
-      if (!trip.startDate) {
-        return false
-      }
+    const upcomingTrips = tripsWithStatus
+      .filter(({ status }) => status === "UPCOMING")
+      .map(({ trip }) => trip)
 
-      const startDate = new Date(`${trip.startDate}T00:00:00`)
+    const activeTrips = tripsWithStatus.filter(
+      ({ status }) => status === "ACTIVE"
+    )
 
-      return startDate >= today
-    })
-
-    const activeTrips = trips.filter((trip) => {
-      const start = trip.startDate
-        ? new Date(`${trip.startDate}T00:00:00`)
-        : null
-
-      const end = trip.endDate
-        ? new Date(`${trip.endDate}T23:59:59`)
-        : null
-
-      return start && end && start <= today && end >= today
-    })
+    const completedTrips = tripsWithStatus.filter(
+      ({ status }) => status === "COMPLETED"
+    )
 
     const totalBudget = trips.reduce((total, trip) => {
       return total + Number(trip.budget || 0)
@@ -83,6 +76,7 @@ function Dashboard() {
       totalTrips: trips.length,
       upcomingTrips: upcomingTrips.length,
       activeTrips: activeTrips.length,
+      completedTrips: completedTrips.length,
       totalBudget,
       upcomingTripList: upcomingTrips.slice(0, 3),
     }
@@ -126,14 +120,14 @@ function Dashboard() {
           <StatCard
             type="trips"
             label="Total Trips"
-            value={loading ? "—" : dashboardStats.totalTrips}
+            value={loading ? "Ã¢â‚¬â€" : dashboardStats.totalTrips}
             description="Journeys planned"
           />
 
           <StatCard
             type="countries"
             label="Upcoming Trips"
-            value={loading ? "—" : dashboardStats.upcomingTrips}
+            value={loading ? "Ã¢â‚¬â€" : dashboardStats.upcomingTrips}
             description="Future journeys"
           />
 
@@ -142,7 +136,7 @@ function Dashboard() {
             label="Total Budget"
             value={
               loading
-                ? "—"
+                ? "Ã¢â‚¬â€"
                 : formatBudget(dashboardStats.totalBudget)
             }
             description="Across your trips"
@@ -151,7 +145,7 @@ function Dashboard() {
           <StatCard
             type="expenses"
             label="Active Trips"
-            value={loading ? "—" : dashboardStats.activeTrips}
+            value={loading ? "Ã¢â‚¬â€" : dashboardStats.activeTrips}
             description="Trips happening now"
           />
 

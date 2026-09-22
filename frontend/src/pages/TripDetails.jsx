@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
   AlertTriangle,
@@ -18,6 +18,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import api from "../services/api"
 import { deleteTrip } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
+import { getTripStatus, getTripStatusStyles } from "../utils/tripUtils"
 import ConfirmModal from "../components/ConfirmModal"
 
 function TripDetails() {
@@ -83,7 +84,7 @@ function TripDetails() {
   const formatDate = (date) => {
     if (!date) return "Not set"
 
-    return new Date(date).toLocaleDateString(
+    return new Date(`${date}T00:00:00`).toLocaleDateString(
       "en-IN",
       {
         day: "numeric",
@@ -101,24 +102,6 @@ function TripDetails() {
     return `Rs. ${Number(budget).toLocaleString("en-IN")}`
   }
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "PLANNED":
-        return "border-[#b9dfda] bg-[#eaf8f6] text-[#087f82]"
-
-      case "ONGOING":
-        return "border-[#b9dfc8] bg-[#edf9f1] text-[#198154]"
-
-      case "COMPLETED":
-        return "border-[#cbd4f1] bg-[#eef1ff] text-[#5369b7]"
-
-      case "CANCELLED":
-        return "border-[#f1cbc5] bg-[#fff1ef] text-[#c96556]"
-
-      default:
-        return "border-[#dce3df] bg-[#f4f6f4] text-[#687583]"
-    }
-  }
 
   if (loading) {
     return (
@@ -164,6 +147,9 @@ function TripDetails() {
       .filter(Boolean)
       .join(", ") || "Destination not set"
 
+  const tripStatus = getTripStatus(trip)
+  const tripStatusStyles = getTripStatusStyles(tripStatus)
+
   return (
     <div className="mx-auto max-w-[1450px] space-y-7">
 
@@ -189,11 +175,9 @@ function TripDetails() {
           <div className="flex flex-wrap items-center gap-3">
 
             <span
-              className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] ${getStatusStyle(
-                trip.status
-              )}`}
+              className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] ${tripStatusStyles.badge}`}
             >
-              {trip.status || "PLANNED"}
+              {tripStatusStyles.label}
             </span>
 
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/65 px-3 py-1.5 text-xs font-semibold text-[#687583] backdrop-blur-sm">
