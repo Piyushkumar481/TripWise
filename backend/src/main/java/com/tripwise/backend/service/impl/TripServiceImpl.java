@@ -12,15 +12,33 @@ import com.tripwise.backend.repository.TripRepository;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.interfaces.TripService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class TripServiceImpl implements TripService {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(TripServiceImpl.class);
+
+    private static final Set<String> ALLOWED_SORT_FIELDS =
+            Set.of(
+                    "title",
+                    "destination",
+                    "startDate",
+                    "endDate"
+            );
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
@@ -53,6 +71,11 @@ public class TripServiceImpl implements TripService {
 
         Trip savedTrip = tripRepository.save(trip);
 
+        logger.info(
+                "Trip created successfully with id: {}",
+                savedTrip.getId()
+        );
+
         return mapToResponse(savedTrip);
     }
 
@@ -70,18 +93,88 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    public Page<TripResponse> getMyTrips(
+            String email,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            String search,
+            String destination,
+            LocalDate startDateFrom,
+            LocalDate startDateTo) {
+
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                    "Invalid sort field: " + sortBy
+            );
+        }
+
+        if (!direction.equalsIgnoreCase("asc")
+                && !direction.equalsIgnoreCase("desc")) {
+
+            throw new IllegalArgumentException(
+                    "Direction must be 'asc' or 'desc'"
+            );
+        }
+
+        if (startDateFrom != null
+                && startDateTo != null
+                && startDateFrom.isAfter(startDateTo)) {
+
+            throw new IllegalArgumentException(
+                    "startDateFrom cannot be after startDateTo"
+            );
+        }
+
+        Sort.Direction sortDirection =
+                direction.equalsIgnoreCase("desc")
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size,
+                        Sort.by(sortDirection, sortBy)
+                );
+
+        Page<Trip> trips =
+                tripRepository.searchTrips(
+                        email,
+                        search,
+                        destination,
+                        startDateFrom,
+                        startDateTo,
+                        pageable
+                );
+
+        return trips.map(this::mapToResponse);
+    }
+
+    @Override
     public TripResponse getTripById(
             String email,
             Long tripId) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new InvalidCredentialsException("User not found"));
+        logger.debug("Fetching trip with id: {}", tripId);
 
         Trip trip = tripRepository
-                .findByIdAndUserId(tripId, user.getId())
-                .orElseThrow(() ->
-                        new TripNotFoundException("Trip not found"));
+                .findByIdAndUserEmail(tripId, email)
+                .orElseThrow(() -> {
+                    logger.warn(
+                            "Trip with id {} was not found for user {}",
+                            tripId,
+                            email
+                    );
+
+                    return new TripNotFoundException("Trip not found");
+                });
+
+        logger.debug(
+                "Trip with id {} retrieved successfully",
+                tripId
+        );
 
         return mapToResponse(trip);
     }
@@ -92,12 +185,8 @@ public class TripServiceImpl implements TripService {
             Long tripId,
             TripRequest request) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new InvalidCredentialsException("User not found"));
-
         Trip trip = tripRepository
-                .findByIdAndUserId(tripId, user.getId())
+                .findByIdAndUserEmail(tripId, email)
                 .orElseThrow(() ->
                         new TripNotFoundException("Trip not found"));
 
@@ -123,16 +212,29 @@ public class TripServiceImpl implements TripService {
             String email,
             Long tripId) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new InvalidCredentialsException("User not found"));
+        logger.debug(
+                "Attempting to delete trip with id: {}",
+                tripId
+        );
 
         Trip trip = tripRepository
-                .findByIdAndUserId(tripId, user.getId())
-                .orElseThrow(() ->
-                        new TripNotFoundException("Trip not found"));
+                .findByIdAndUserEmail(tripId, email)
+                .orElseThrow(() -> {
+                    logger.warn(
+                            "Trip with id {} was not found for user {}",
+                            tripId,
+                            email
+                    );
+
+                    return new TripNotFoundException("Trip not found");
+                });
 
         tripRepository.delete(trip);
+
+        logger.info(
+                "Trip deleted successfully with id: {}",
+                tripId
+        );
     }
 
     @Override
@@ -199,3 +301,4 @@ public class TripServiceImpl implements TripService {
                 .build();
     }
 }
+

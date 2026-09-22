@@ -168,9 +168,9 @@ class TripServiceImplTest {
                 "test@example.com"
         )).thenReturn(Optional.of(user));
 
-        when(tripRepository.findByIdAndUserId(
+        when(tripRepository.findByIdAndUserEmail(
                 999L,
-                user.getId()
+                "test@example.com"
         )).thenReturn(Optional.empty());
 
         assertThrows(
@@ -183,9 +183,11 @@ class TripServiceImplTest {
         );
 
         verify(tripRepository)
-                .findByIdAndUserId(
+                .findByIdAndUserEmail(
                         999L,
-                        user.getId()
+                        "test@example.com"
                 );
     }
 }
+
+

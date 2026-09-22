@@ -1,15 +1,30 @@
 spring:
+
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/tripwise_test}
+
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/tripwise_test?options=-c%20TimeZone=UTC}
+
     username: ${DB_USERNAME:postgres}
+
     password: ${DB_PASSWORD:postgres}
+
     driver-class-name: org.postgresql.Driver
 
   jpa:
+
     hibernate:
+
       ddl-auto: create-drop
+
     show-sql: false
 
   sql:
+
     init:
+
       mode: never
+
+jwt:
+  secret: VHJpcFdpc2VUZXN0U2VjcmV0S2V5MTIzNDU2Nzg5MDE=
+  expiration: 86400000
+
