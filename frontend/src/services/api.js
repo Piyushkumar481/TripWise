@@ -1,7 +1,13 @@
 import axios from "axios"
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+
+if (!apiBaseUrl?.trim()) {
+  throw new Error("VITE_API_BASE_URL is required.")
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: apiBaseUrl,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
