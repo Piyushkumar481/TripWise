@@ -1,14 +1,26 @@
+﻿import { Package } from "lucide-react"
+
+import TripEmptyState from "../components/trip/TripEmptyState"
+import TripModulePage from "../components/trip/TripModulePage"
+
 function TripPacking() {
   return (
-    <div className="rounded-2xl border border-[#e1e7e3] bg-white p-8 shadow-[0_7px_25px_rgba(23,35,60,0.035)]">
-      <h1 className="font-serif text-2xl font-bold text-[#17233c]">
-        Packing
-      </h1>
-
-      <p className="mt-2 text-sm leading-6 text-[#71808d]">
-        Manage your packing checklist here.
-      </p>
-    </div>
+    <TripModulePage
+      icon={Package}
+      eyebrow="Preparation"
+      title="Packing"
+      description="Create and manage your packing checklist so nothing important gets left behind."
+      actionLabel="Add item"
+      onAction={() => {}}
+    >
+      <TripEmptyState
+        icon={Package}
+        title="Your packing list is empty"
+        description="Start creating your packing checklist with clothes, essentials, electronics and travel items."
+        actionLabel="Add your first item"
+        onAction={() => {}}
+      />
+    </TripModulePage>
   )
 }
 

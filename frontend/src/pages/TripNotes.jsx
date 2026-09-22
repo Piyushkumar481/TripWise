@@ -1,14 +1,26 @@
+﻿import { ClipboardList } from "lucide-react"
+
+import TripEmptyState from "../components/trip/TripEmptyState"
+import TripModulePage from "../components/trip/TripModulePage"
+
 function TripNotes() {
   return (
-    <div className="rounded-2xl border border-[#e1e7e3] bg-white p-8 shadow-[0_7px_25px_rgba(23,35,60,0.035)]">
-      <h1 className="font-serif text-2xl font-bold text-[#17233c]">
-        Notes
-      </h1>
-
-      <p className="mt-2 text-sm leading-6 text-[#71808d]">
-        Keep important notes and travel information here.
-      </p>
-    </div>
+    <TripModulePage
+      icon={ClipboardList}
+      eyebrow="Personal space"
+      title="Notes"
+      description="Save reminders, ideas, places and anything else you want to remember about this trip."
+      actionLabel="Create note"
+      onAction={() => {}}
+    >
+      <TripEmptyState
+        icon={ClipboardList}
+        title="No notes yet"
+        description="Create notes for restaurants, places, reminders, reservations or anything else related to your trip."
+        actionLabel="Create your first note"
+        onAction={() => {}}
+      />
+    </TripModulePage>
   )
 }
 

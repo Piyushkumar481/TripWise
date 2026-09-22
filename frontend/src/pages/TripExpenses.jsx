@@ -1,14 +1,26 @@
+﻿import { Wallet } from "lucide-react"
+
+import TripEmptyState from "../components/trip/TripEmptyState"
+import TripModulePage from "../components/trip/TripModulePage"
+
 function TripExpenses() {
   return (
-    <div className="rounded-2xl border border-[#e1e7e3] bg-white p-8 shadow-[0_7px_25px_rgba(23,35,60,0.035)]">
-      <h1 className="font-serif text-2xl font-bold text-[#17233c]">
-        Expenses
-      </h1>
-
-      <p className="mt-2 text-sm leading-6 text-[#71808d]">
-        Track and manage your trip expenses here.
-      </p>
-    </div>
+    <TripModulePage
+      icon={Wallet}
+      eyebrow="Money"
+      title="Expenses"
+      description="Track your spending and understand how your trip budget is being used."
+      actionLabel="Add expense"
+      onAction={() => {}}
+    >
+      <TripEmptyState
+        icon={Wallet}
+        title="No expenses yet"
+        description="Once you start adding expenses, you'll be able to track your spending and compare it with your trip budget."
+        actionLabel="Add your first expense"
+        onAction={() => {}}
+      />
+    </TripModulePage>
   )
 }
 
