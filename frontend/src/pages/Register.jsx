@@ -1,4 +1,8 @@
-import { useState } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import {
   ArrowRight,
   Check,
@@ -31,6 +35,13 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const errorRef = useRef(null)
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus()
+    }
+  }, [error])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -342,14 +353,24 @@ function Register() {
 
                   {/* Success message */}
                   {success && (
-                    <div className="mt-6 rounded-2xl border border-[#c8e7df] bg-[#effaf6] px-4 py-3 text-sm font-medium text-[#4c8a7c]">
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      className="mt-6 rounded-2xl border border-[#c8e7df] bg-[#effaf6] px-4 py-3 text-sm font-medium text-[#4c8a7c]"
+                    >
                       {success}
                     </div>
                   )}
 
                   {/* Error message */}
                   {error && (
-                    <div className="mt-6 rounded-2xl border border-[#f0c8c8] bg-[#fff3f3] px-4 py-3 text-sm font-medium text-[#b45f68]">
+                    <div
+                      ref={errorRef}
+                      role="alert"
+                      aria-live="assertive"
+                      tabIndex={-1}
+                      className="mt-6 rounded-2xl border border-[#f0c8c8] bg-[#fff3f3] px-4 py-3 text-sm font-medium text-[#b45f68]"
+                    >
                       {error}
                     </div>
                   )}
@@ -381,6 +402,7 @@ function Register() {
                           id="fullName"
                           name="fullName"
                           type="text"
+                          required
                           value={formData.fullName}
                           onChange={handleChange}
                           placeholder="What should we call you?"
@@ -412,6 +434,7 @@ function Register() {
                           id="email"
                           name="email"
                           type="email"
+                          required
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="you@example.com"
@@ -477,6 +500,7 @@ function Register() {
                           id="password"
                           name="password"
                           type={showPassword ? "text" : "password"}
+                          required
                           value={formData.password}
                           onChange={handleChange}
                           placeholder="Create a password"
@@ -532,6 +556,7 @@ function Register() {
                         <input
                           id="confirmPassword"
                           name="confirmPassword"
+                          required
                           type={
                             showConfirmPassword
                               ? "text"

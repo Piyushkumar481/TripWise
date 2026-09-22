@@ -1,4 +1,8 @@
-import { useState } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import {
   ArrowRight,
   Eye,
@@ -25,6 +29,13 @@ function Login() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const errorRef = useRef(null)
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus()
+    }
+  }, [error])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -168,6 +179,7 @@ function Login() {
                       id="email"
                       name="email"
                       type="email"
+                      required
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
@@ -208,6 +220,7 @@ function Login() {
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
+                      required
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Enter your password"
@@ -254,7 +267,13 @@ function Login() {
                 </div>
 
                 {error && (
-                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  <div
+                    ref={errorRef}
+                    role="alert"
+                    aria-live="assertive"
+                    tabIndex={-1}
+                    className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+                  >
                     {error}
                   </div>
                 )}
