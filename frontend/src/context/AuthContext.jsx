@@ -10,9 +10,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("tripwise_user")
 
-    return storedUser
-      ? JSON.parse(storedUser)
-      : null
+    if (!storedUser) {
+      return null
+    }
+
+    try {
+      return JSON.parse(storedUser)
+    } catch {
+      localStorage.removeItem("tripwise_user")
+      return null
+    }
   })
 
   const [token, setToken] = useState(() => {
