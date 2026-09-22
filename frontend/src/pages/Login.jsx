@@ -183,7 +183,6 @@ function Login() {
                       id="email"
                       name="email"
                       type="email"
-                      required
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
@@ -224,7 +223,6 @@ function Login() {
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      required
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Enter your password"

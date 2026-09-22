@@ -406,7 +406,6 @@ function Register() {
                           id="fullName"
                           name="fullName"
                           type="text"
-                          required
                           value={formData.fullName}
                           onChange={handleChange}
                           placeholder="What should we call you?"
@@ -438,7 +437,6 @@ function Register() {
                           id="email"
                           name="email"
                           type="email"
-                          required
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="you@example.com"
@@ -504,7 +502,6 @@ function Register() {
                           id="password"
                           name="password"
                           type={showPassword ? "text" : "password"}
-                          required
                           value={formData.password}
                           onChange={handleChange}
                           placeholder="Create a password"
@@ -560,7 +557,6 @@ function Register() {
                         <input
                           id="confirmPassword"
                           name="confirmPassword"
-                          required
                           type={
                             showConfirmPassword
                               ? "text"
