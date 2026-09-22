@@ -49,6 +49,10 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    if (loading) {
+      return
+    }
+
     setError("")
 
     if (!formData.email.trim()) {

@@ -58,6 +58,10 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
+    if (loading) {
+      return
+    }
+
     setError("")
     setSuccess("")
 
