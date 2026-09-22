@@ -1,4 +1,4 @@
-﻿import {
+import {
   BrowserRouter,
   Routes,
   Route,
@@ -11,6 +11,12 @@ import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
 import CreateTrip from "./pages/CreateTrip"
 import TripDetails from "./pages/TripDetails"
+import TripWorkspaceLayout from "./layouts/TripWorkspaceLayout"
+import TripItinerary from "./pages/TripItinerary"
+import TripExpenses from "./pages/TripExpenses"
+import TripDocuments from "./pages/TripDocuments"
+import TripPacking from "./pages/TripPacking"
+import TripNotes from "./pages/TripNotes"
 import EditTrip from "./pages/EditTrip"
 import NotFound from "./pages/NotFound"
 
@@ -63,10 +69,37 @@ function App() {
               element={<EditTrip />}
             />
 
-            <Route
-              path="/trips/:id"
-              element={<TripDetails />}
-            />
+            <Route path="/trips/:id" element={<TripWorkspaceLayout />}>
+              <Route
+                index
+                element={<TripDetails />}
+              />
+
+              <Route
+                path="itinerary"
+                element={<TripItinerary />}
+              />
+
+              <Route
+                path="expenses"
+                element={<TripExpenses />}
+              />
+
+              <Route
+                path="documents"
+                element={<TripDocuments />}
+              />
+
+              <Route
+                path="packing"
+                element={<TripPacking />}
+              />
+
+              <Route
+                path="notes"
+                element={<TripNotes />}
+              />
+            </Route>
 
           </Route>
         </Route>
