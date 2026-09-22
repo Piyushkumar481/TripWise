@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 
 import {
   ArrowRight,
@@ -29,11 +33,16 @@ function Trips() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
+  const requestId = useRef(0)
 
   const loadTrips = async () => {
+    const currentRequestId = ++requestId.current
+
     try {
-      setLoading(true)
-      setError("")
+      if (currentRequestId === requestId.current) {
+        setLoading(true)
+        setError("")
+      }
 
       const response = await getTrips({
         page,
@@ -43,6 +52,10 @@ function Trips() {
         search: debouncedSearch,
       })
 
+      if (currentRequestId !== requestId.current) {
+        return
+      }
+
       const pageData = response?.data
 
       setTrips(pageData?.content || [])
@@ -51,16 +64,20 @@ function Trips() {
     } catch (error) {
       console.error("Failed to load trips:", error)
 
-      setError(
-        getApiErrorMessage(
-          error,
-          "Unable to load your trips."
+      if (currentRequestId === requestId.current) {
+        setError(
+          getApiErrorMessage(
+            error,
+            "Unable to load your trips."
+          )
         )
-      )
 
-      setTrips([])
+        setTrips([])
+      }
     } finally {
-      setLoading(false)
+      if (currentRequestId === requestId.current) {
+        setLoading(false)
+      }
     }
   }
 
