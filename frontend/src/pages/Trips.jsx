@@ -25,6 +25,7 @@ function Trips() {
   const [error, setError] = useState("")
 
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
@@ -39,7 +40,7 @@ function Trips() {
         size: 9,
         sortBy: "startDate",
         sortDirection: "asc",
-        search,
+        search: debouncedSearch,
       })
 
       const pageData = response?.data
@@ -64,8 +65,16 @@ function Trips() {
   }
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 350)
+
+    return () => clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => {
     loadTrips()
-  }, [page, search])
+  }, [page, debouncedSearch])
 
   const handleSearch = (event) => {
     setSearch(event.target.value)
