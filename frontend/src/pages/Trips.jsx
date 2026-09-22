@@ -35,52 +35,6 @@ function Trips() {
   const [totalElements, setTotalElements] = useState(0)
   const requestId = useRef(0)
 
-  const loadTrips = async () => {
-    const currentRequestId = ++requestId.current
-
-    try {
-      if (currentRequestId === requestId.current) {
-        setLoading(true)
-        setError("")
-      }
-
-      const response = await getTrips({
-        page,
-        size: 9,
-        sortBy: "startDate",
-        sortDirection: "asc",
-        search: debouncedSearch,
-      })
-
-      if (currentRequestId !== requestId.current) {
-        return
-      }
-
-      const pageData = response?.data
-
-      setTrips(pageData?.content || [])
-      setTotalPages(pageData?.totalPages || 0)
-      setTotalElements(pageData?.totalElements || 0)
-    } catch (error) {
-      console.error("Failed to load trips:", error)
-
-      if (currentRequestId === requestId.current) {
-        setError(
-          getApiErrorMessage(
-            error,
-            "Unable to load your trips."
-          )
-        )
-
-        setTrips([])
-      }
-    } finally {
-      if (currentRequestId === requestId.current) {
-        setLoading(false)
-      }
-    }
-  }
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search)
@@ -90,6 +44,52 @@ function Trips() {
   }, [search])
 
   useEffect(() => {
+    const loadTrips = async () => {
+      const currentRequestId = ++requestId.current
+
+      try {
+        if (currentRequestId === requestId.current) {
+          setLoading(true)
+          setError("")
+        }
+
+        const response = await getTrips({
+          page,
+          size: 9,
+          sortBy: "startDate",
+          sortDirection: "asc",
+          search: debouncedSearch,
+        })
+
+        if (currentRequestId !== requestId.current) {
+          return
+        }
+
+        const pageData = response?.data
+
+        setTrips(pageData?.content || [])
+        setTotalPages(pageData?.totalPages || 0)
+        setTotalElements(pageData?.totalElements || 0)
+      } catch (error) {
+        console.error("Failed to load trips:", error)
+
+        if (currentRequestId === requestId.current) {
+          setError(
+            getApiErrorMessage(
+              error,
+              "Unable to load your trips."
+            )
+          )
+
+          setTrips([])
+        }
+      } finally {
+        if (currentRequestId === requestId.current) {
+          setLoading(false)
+        }
+      }
+    }
+
     loadTrips()
   }, [page, debouncedSearch])
 
