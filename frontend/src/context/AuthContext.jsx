@@ -55,6 +55,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    let isActive = true
+
     const loadCurrentUser = async () => {
       if (!token) {
         setLoading(false)
@@ -63,6 +65,10 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const response = await getCurrentUser()
+
+        if (!isActive) {
+          return
+        }
 
         const currentUser = response.data
 
@@ -78,13 +84,24 @@ export const AuthProvider = ({ children }) => {
           error
         )
 
-        logout()
+        if (
+          isActive &&
+          error.response?.status === 401
+        ) {
+          logout()
+        }
       } finally {
-        setLoading(false)
+        if (isActive) {
+          setLoading(false)
+        }
       }
     }
 
     loadCurrentUser()
+
+    return () => {
+      isActive = false
+    }
   }, [token])
 
   const isAuthenticated = !!token
