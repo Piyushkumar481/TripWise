@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom"
 import { loginUser } from "../services/authService"
 import { getApiErrorMessage } from "../utils/errorHandler"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/useAuth"
 
 function Login() {
   const navigate = useNavigate()

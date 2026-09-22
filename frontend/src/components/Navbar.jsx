@@ -6,7 +6,7 @@ import {
   Sprout,
 } from "lucide-react"
 
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/useAuth"
 
 function Navbar({ onMenuClick }) {
   const { user } = useAuth()
