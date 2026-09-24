@@ -4,14 +4,11 @@ import com.tripwise.backend.dto.CreateItineraryItemRequest;
 import com.tripwise.backend.dto.ItineraryItemResponse;
 import com.tripwise.backend.entity.ItineraryItem;
 import com.tripwise.backend.entity.Trip;
-import com.tripwise.backend.entity.User;
-import com.tripwise.backend.exception.InvalidCredentialsException;
 import com.tripwise.backend.exception.InvalidItineraryException;
 import com.tripwise.backend.exception.ItineraryItemNotFoundException;
 import com.tripwise.backend.exception.TripNotFoundException;
 import com.tripwise.backend.repository.ItineraryItemRepository;
 import com.tripwise.backend.repository.TripRepository;
-import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.interfaces.ItineraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +24,6 @@ public class ItineraryServiceImpl
 
     private final ItineraryItemRepository itineraryRepository;
     private final TripRepository tripRepository;
-    private final UserRepository userRepository;
 
     @Override
     public ItineraryItemResponse createItem(
@@ -173,15 +169,8 @@ public class ItineraryServiceImpl
             String email,
             Long tripId) {
 
-        User user =
-                userRepository.findByEmail(email)
-                        .orElseThrow(() ->
-                                new InvalidCredentialsException(
-                                        "User not found"
-                                ));
-
         return tripRepository
-                .findByIdAndUserId(tripId, user.getId())
+                .findByIdAndUserEmail(tripId, email)
                 .orElseThrow(() ->
                         new TripNotFoundException(
                                 "Trip not found"
