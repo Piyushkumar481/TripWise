@@ -6,9 +6,13 @@ import {
 } from "lucide-react"
 import { useOutletContext, useParams } from "react-router-dom"
 
+import AddItineraryItemModal from "../components/trip/AddItineraryItemModal"
 import TripEmptyState from "../components/trip/TripEmptyState"
 import TripModulePage from "../components/trip/TripModulePage"
-import { getItinerary } from "../services/itineraryService"
+import {
+  createItineraryItem,
+  getItinerary,
+} from "../services/itineraryService"
 import { getApiErrorMessage } from "../utils/errorHandler"
 
 function TripItinerary() {
@@ -18,6 +22,9 @@ function TripItinerary() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
 
   useEffect(() => {
     let isActive = true
@@ -100,79 +107,133 @@ function TripItinerary() {
     )
   }
 
+  const handleAddActivity = async (activityData) => {
+    setSubmitting(true)
+    setSubmitError("")
+
+    try {
+      const response = await createItineraryItem(
+        id,
+        activityData
+      )
+
+      const createdItem = response?.data
+
+      if (createdItem) {
+        setItems((current) => [
+          ...current,
+          createdItem,
+        ])
+      }
+
+      setIsModalOpen(false)
+    } catch (error) {
+      setSubmitError(
+        getApiErrorMessage(
+          error,
+          "Unable to add this activity."
+        )
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const openAddModal = () => {
+    setSubmitError("")
+    setIsModalOpen(true)
+  }
+
+  const closeAddModal = () => {
+    if (!submitting) {
+      setIsModalOpen(false)
+    }
+  }
+
   return (
-    <TripModulePage
-      icon={CalendarDays}
-      eyebrow="Planning"
-      title="Itinerary"
-      description={`Plan ${trip?.title || "your trip"} day by day.`}
-      actionLabel="Add activity"
-      onAction={() => {}}
-    >
-      {loading && <ItinerarySkeleton />}
+    <>
+      <TripModulePage
+        icon={CalendarDays}
+        eyebrow="Planning"
+        title="Itinerary"
+        description={`Plan ${trip?.title || "your trip"} day by day.`}
+        actionLabel="Add activity"
+        onAction={openAddModal}
+      >
+        {loading && <ItinerarySkeleton />}
 
-      {!loading && error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h3 className="font-semibold text-red-800">
-            Unable to load itinerary
-          </h3>
+        {!loading && error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+            <h3 className="font-semibold text-red-800">
+              Unable to load itinerary
+            </h3>
 
-          <p className="mt-2 text-sm text-red-700">
-            {error}
-          </p>
-        </div>
-      )}
+            <p className="mt-2 text-sm text-red-700">
+              {error}
+            </p>
+          </div>
+        )}
 
-      {!loading && !error && items.length === 0 && (
-        <TripEmptyState
-          icon={CalendarDays}
-          title="Your itinerary is empty"
-          description="Start planning your trip by adding activities, places to visit, reservations and other important plans."
-          actionLabel="Add your first activity"
-          onAction={() => {}}
-        />
-      )}
+        {!loading && !error && items.length === 0 && (
+          <TripEmptyState
+            icon={CalendarDays}
+            title="Your itinerary is empty"
+            description="Start planning your trip by adding activities, places to visit, reservations and other important plans."
+            actionLabel="Add your first activity"
+            onAction={openAddModal}
+          />
+        )}
 
-      {!loading && !error && items.length > 0 && (
-        <div className="space-y-6">
-          {groupedEntries.map(([date, dayItems]) => (
-            <section
-              key={date}
-              className="rounded-3xl border border-[#e5ebe8] bg-white p-5 shadow-sm sm:p-6"
-            >
-              <div className="mb-5 flex items-center gap-3">
-                <div className="rounded-xl bg-[#e8f6f4] p-2.5">
-                  <CalendarDays className="h-5 w-5 text-[#087f82]" />
+        {!loading && !error && items.length > 0 && (
+          <div className="space-y-6">
+            {groupedEntries.map(([date, dayItems]) => (
+              <section
+                key={date}
+                className="rounded-3xl border border-[#e5ebe8] bg-white p-5 shadow-sm sm:p-6"
+              >
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="rounded-xl bg-[#e8f6f4] p-2.5">
+                    <CalendarDays className="h-5 w-5 text-[#087f82]" />
+                  </div>
+
+                  <div>
+                    <h2 className="font-semibold text-[#142c2a]">
+                      {formatDate(date)}
+                    </h2>
+
+                    <p className="text-xs text-[#71807e]">
+                      {dayItems.length}{" "}
+                      {dayItems.length === 1
+                        ? "activity"
+                        : "activities"}
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <h2 className="font-semibold text-[#142c2a]">
-                    {formatDate(date)}
-                  </h2>
-
-                  <p className="text-xs text-[#71807e]">
-                    {dayItems.length}{" "}
-                    {dayItems.length === 1
-                      ? "activity"
-                      : "activities"}
-                  </p>
+                <div className="space-y-3">
+                  {dayItems.map((item) => (
+                    <ItineraryItem
+                      key={item.id}
+                      item={item}
+                      formatTime={formatTime}
+                    />
+                  ))}
                 </div>
-              </div>
+              </section>
+            ))}
+          </div>
+        )}
+      </TripModulePage>
 
-              <div className="space-y-3">
-                {dayItems.map((item) => (
-                  <ItineraryItem
-                    key={item.id}
-                    item={item}
-                    formatTime={formatTime}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-    </TripModulePage>
+      <AddItineraryItemModal
+        isOpen={isModalOpen}
+        onClose={closeAddModal}
+        onSubmit={handleAddActivity}
+        trip={trip}
+        submitting={submitting}
+        error={submitError}
+      />
+    </>
   )
 }
 
