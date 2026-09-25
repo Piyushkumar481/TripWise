@@ -8,7 +8,10 @@ function AddItineraryItemModal({
   trip,
   submitting = false,
   error = "",
+  editingItem = null,
 }) {
+  const isEditing = Boolean(editingItem)
+
   const [formData, setFormData] = useState({
     date: "",
     startTime: "",
@@ -26,18 +29,30 @@ function AddItineraryItemModal({
       return
     }
 
-    setFormData({
-      date: trip?.startDate || "",
-      startTime: "",
-      endTime: "",
-      title: "",
-      description: "",
-      location: "",
-      category: "",
-    })
+    if (editingItem) {
+      setFormData({
+        date: editingItem.activityDate || "",
+        startTime: editingItem.startTime || "",
+        endTime: editingItem.endTime || "",
+        title: editingItem.title || "",
+        description: editingItem.notes || "",
+        location: editingItem.location || "",
+        category: editingItem.category || "",
+      })
+    } else {
+      setFormData({
+        date: trip?.startDate || "",
+        startTime: "",
+        endTime: "",
+        title: "",
+        description: "",
+        location: "",
+        category: "",
+      })
+    }
 
     setValidationError("")
-  }, [isOpen, trip])
+  }, [isOpen, trip, editingItem])
 
   if (!isOpen) {
     return null
@@ -119,11 +134,13 @@ function AddItineraryItemModal({
             </p>
 
             <h2 className="mt-1 text-xl font-semibold text-[#142c2a]">
-              Add activity
+              {isEditing ? "Edit activity" : "Add activity"}
             </h2>
 
             <p className="mt-1 text-sm text-[#71807e]">
-              Add an activity to your itinerary.
+              {isEditing
+                ? "Update the details of this itinerary activity."
+                : "Add an activity to your itinerary."}
             </p>
           </div>
 
@@ -325,7 +342,13 @@ function AddItineraryItemModal({
               disabled={submitting}
               className="rounded-xl bg-[#087f82] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#066d70] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Adding..." : "Add activity"}
+              {submitting
+                ? isEditing
+                  ? "Saving..."
+                  : "Adding..."
+                : isEditing
+                  ? "Save changes"
+                  : "Add activity"}
             </button>
           </div>
         </form>
