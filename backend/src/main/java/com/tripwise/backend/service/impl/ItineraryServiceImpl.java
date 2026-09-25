@@ -185,7 +185,7 @@ public class ItineraryServiceImpl
                 activityDate.isAfter(trip.getEndDate())) {
 
             throw new InvalidItineraryException(
-                    "Activity date must be within the trip dates"
+                    "Itinerary date must be within the trip dates"
             );
         }
     }

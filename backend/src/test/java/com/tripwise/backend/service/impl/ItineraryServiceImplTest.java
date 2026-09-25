@@ -137,7 +137,7 @@ class ItineraryServiceImplTest {
                 );
 
         assertEquals(
-                "Activity date must be within the trip dates",
+                "Itinerary date must be within the trip dates",
                 exception.getMessage()
         );
 
