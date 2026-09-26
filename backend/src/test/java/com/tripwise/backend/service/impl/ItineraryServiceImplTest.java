@@ -212,6 +212,71 @@ class ItineraryServiceImplTest {
         );
     }
 
+
+    @Test
+    void shouldThrowExceptionWhenDeletingMissingItineraryItem() {
+
+        when(tripRepository.findByIdAndUserEmail(
+                1L,
+                "user@example.com"
+        )).thenReturn(Optional.of(trip));
+
+        when(itineraryRepository.findByIdAndTrip(
+                999L,
+                trip
+        )).thenReturn(Optional.empty());
+
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> itineraryService.deleteItem(
+                                "user@example.com",
+                                1L,
+                                999L
+                        )
+                );
+
+        assertEquals(
+                "Itinerary item not found",
+                exception.getMessage()
+        );
+
+        verify(itineraryRepository, never())
+                .delete(any(ItineraryItem.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingMissingItineraryItem() {
+
+        when(tripRepository.findByIdAndUserEmail(
+                1L,
+                "user@example.com"
+        )).thenReturn(Optional.of(trip));
+
+        when(itineraryRepository.findByIdAndTrip(
+                999L,
+                trip
+        )).thenReturn(Optional.empty());
+
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> itineraryService.updateItem(
+                                "user@example.com",
+                                1L,
+                                999L,
+                                request
+                        )
+                );
+
+        assertEquals(
+                "Itinerary item not found",
+                exception.getMessage()
+        );
+
+        verify(itineraryRepository, never())
+                .save(any(ItineraryItem.class));
+    }
     @Test
     void shouldDeleteItineraryItem() {
 
