@@ -3,6 +3,9 @@ package com.tripwise.backend.controller;
 import com.tripwise.backend.dto.CreateItineraryItemRequest;
 import com.tripwise.backend.dto.ItineraryItemResponse;
 import com.tripwise.backend.entity.ItineraryCategory;
+import com.tripwise.backend.exception.GlobalExceptionHandler;
+import com.tripwise.backend.exception.InvalidItineraryException;
+import com.tripwise.backend.exception.TripNotFoundException;
 import com.tripwise.backend.security.CustomUserDetailsService;
 import com.tripwise.backend.security.JwtService;
 import com.tripwise.backend.service.interfaces.ItineraryService;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -26,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ItineraryController.class)
+@Import(GlobalExceptionHandler.class)
 class ItineraryControllerTest {
 
     @Autowired
@@ -94,6 +99,49 @@ class ItineraryControllerTest {
         ).andExpect(status().isCreated());
     }
 
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldReturn404WhenTripDoesNotExist() throws Exception {
+
+        when(itineraryService.getItems(
+                eq("user@example.com"),
+                eq(999L)
+        )).thenThrow(
+                new TripNotFoundException("Trip not found")
+        );
+
+        mockMvc.perform(
+                get("/api/trips/999/itinerary")
+        ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldReturn400WhenItineraryDateIsInvalid() throws Exception {
+
+        when(itineraryService.createItem(
+                eq("user@example.com"),
+                eq(1L),
+                any(CreateItineraryItemRequest.class)
+        )).thenThrow(
+                new InvalidItineraryException(
+                        "Itinerary date must be within the trip dates"
+                )
+        );
+
+        mockMvc.perform(
+                post("/api/trips/1/itinerary")
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "title": "Invalid Activity",
+                                  "activityDate": "2026-10-20",
+                                  "category": "ACTIVITY"
+                                }
+                                """)
+        ).andExpect(status().isBadRequest());
+    }
     @Test
     @WithMockUser(username = "user@example.com")
     void shouldRejectInvalidItineraryRequest() throws Exception {
