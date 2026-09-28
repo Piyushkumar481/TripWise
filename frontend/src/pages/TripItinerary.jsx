@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react"
+﻿import { useEffect, useMemo, useState } from "react"
 import {
   CalendarDays,
   Clock3,
   MapPin,
   Pencil,
+  RefreshCw,
   Trash2,
 } from "lucide-react"
 import { useOutletContext, useParams } from "react-router-dom"
@@ -307,6 +308,15 @@ function TripItinerary() {
             <p className="mt-2 text-sm text-red-700">
               {error}
             </p>
+
+            <button
+              type="button"
+              onClick={loadItinerary}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#087f82] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#06696c]"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try again
+            </button>
           </div>
         )}
 
@@ -558,3 +568,4 @@ function ItinerarySkeleton() {
 }
 
 export default TripItinerary
+
