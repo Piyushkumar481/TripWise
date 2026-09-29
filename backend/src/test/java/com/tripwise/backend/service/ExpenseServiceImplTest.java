@@ -91,12 +91,11 @@ class ExpenseServiceImplTest {
                 Expense.builder()
                         .id(1L)
                         .trip(trip)
-                        .category(ExpenseCategory.FOOD)
+                        .title("Dinner")
+                        .category("FOOD")
                         .amount(BigDecimal.valueOf(500))
-                        .expenseDate(
-                                request.getExpenseDate()
-                        )
-                        .description("Dinner")
+                        .date(request.getExpenseDate())
+                        .notes("Dinner")
                         .build();
 
         when(expenseRepository.save(
@@ -144,30 +143,33 @@ class ExpenseServiceImplTest {
                 Expense.builder()
                         .id(1L)
                         .trip(trip)
-                        .category(ExpenseCategory.FOOD)
+                        .title("Dinner")
+                        .category("FOOD")
                         .amount(BigDecimal.valueOf(500))
-                        .expenseDate(LocalDate.now())
-                        .description("Dinner")
+                        .date(LocalDate.now())
+                        .notes("Dinner")
                         .build();
 
         Expense hotel =
                 Expense.builder()
                         .id(2L)
                         .trip(trip)
-                        .category(ExpenseCategory.HOTEL)
+                        .title("Hotel")
+                        .category("HOTEL")
                         .amount(BigDecimal.valueOf(1000))
-                        .expenseDate(LocalDate.now())
-                        .description("Hotel")
+                        .date(LocalDate.now())
+                        .notes("Hotel")
                         .build();
 
         Expense food2 =
                 Expense.builder()
                         .id(3L)
                         .trip(trip)
-                        .category(ExpenseCategory.FOOD)
+                        .title("Lunch")
+                        .category("FOOD")
                         .amount(BigDecimal.valueOf(300))
-                        .expenseDate(LocalDate.now())
-                        .description("Lunch")
+                        .date(LocalDate.now())
+                        .notes("Lunch")
                         .build();
 
         when(userRepository.findByEmail(
@@ -179,8 +181,8 @@ class ExpenseServiceImplTest {
                 user.getId()
         )).thenReturn(Optional.of(trip));
 
-        when(expenseRepository.findByTrip(
-                trip
+        when(expenseRepository.findByTripIdOrderByDateAsc(
+                1L
         )).thenReturn(
                 List.of(
                         food1,

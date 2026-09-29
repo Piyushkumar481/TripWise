@@ -19,20 +19,25 @@ public class Expense {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private ExpenseCategory category;
+    @Column(nullable = false, length = 150)
+    private String title;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "expense_date")
-    private LocalDate expenseDate;
+    @Column(nullable = false)
+    private LocalDate date;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false, length = 100)
+    private String category;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
+    @Column(length = 1000)
+    private String notes;
 }

@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,12 +37,20 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         Trip trip = getUserTrip(email, tripId);
 
+        String category = request.getCategory().name();
+        String notes = request.getDescription();
+
         Expense expense = Expense.builder()
                 .trip(trip)
-                .category(request.getCategory())
+                .title(
+                        notes != null && !notes.isBlank()
+                                ? notes
+                                : category
+                )
                 .amount(request.getAmount())
-                .expenseDate(request.getExpenseDate())
-                .description(request.getDescription())
+                .date(request.getExpenseDate())
+                .category(category)
+                .notes(notes)
                 .build();
 
         Expense savedExpense = expenseRepository.save(expense);
@@ -55,9 +63,10 @@ public class ExpenseServiceImpl implements ExpenseService {
             String email,
             Long tripId) {
 
-        Trip trip = getUserTrip(email, tripId);
+        getUserTrip(email, tripId);
 
-        return expenseRepository.findByTrip(trip)
+        return expenseRepository
+                .findByTripIdOrderByDateAsc(tripId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -69,10 +78,10 @@ public class ExpenseServiceImpl implements ExpenseService {
             Long tripId,
             Long expenseId) {
 
-        Trip trip = getUserTrip(email, tripId);
+        getUserTrip(email, tripId);
 
         Expense expense = expenseRepository
-                .findByIdAndTrip(expenseId, trip)
+                .findByIdAndTripId(expenseId, tripId)
                 .orElseThrow(() ->
                         new RuntimeException("Expense not found"));
 
@@ -86,17 +95,25 @@ public class ExpenseServiceImpl implements ExpenseService {
             Long expenseId,
             CreateExpenseRequest request) {
 
-        Trip trip = getUserTrip(email, tripId);
+        getUserTrip(email, tripId);
 
         Expense expense = expenseRepository
-                .findByIdAndTrip(expenseId, trip)
+                .findByIdAndTripId(expenseId, tripId)
                 .orElseThrow(() ->
                         new RuntimeException("Expense not found"));
 
-        expense.setCategory(request.getCategory());
+        String category = request.getCategory().name();
+        String notes = request.getDescription();
+
+        expense.setTitle(
+                notes != null && !notes.isBlank()
+                        ? notes
+                        : category
+        );
         expense.setAmount(request.getAmount());
-        expense.setExpenseDate(request.getExpenseDate());
-        expense.setDescription(request.getDescription());
+        expense.setDate(request.getExpenseDate());
+        expense.setCategory(category);
+        expense.setNotes(notes);
 
         Expense updatedExpense = expenseRepository.save(expense);
 
@@ -109,10 +126,10 @@ public class ExpenseServiceImpl implements ExpenseService {
             Long tripId,
             Long expenseId) {
 
-        Trip trip = getUserTrip(email, tripId);
+        getUserTrip(email, tripId);
 
         Expense expense = expenseRepository
-                .findByIdAndTrip(expenseId, trip)
+                .findByIdAndTripId(expenseId, tripId)
                 .orElseThrow(() ->
                         new RuntimeException("Expense not found"));
 
@@ -127,7 +144,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         Trip trip = getUserTrip(email, tripId);
 
         List<Expense> expenses =
-                expenseRepository.findByTrip(trip);
+                expenseRepository.findByTripIdOrderByDateAsc(tripId);
 
         BigDecimal totalExpenses = expenses.stream()
                 .map(Expense::getAmount)
@@ -141,27 +158,16 @@ public class ExpenseServiceImpl implements ExpenseService {
         BigDecimal remainingBudget =
                 budget.subtract(totalExpenses);
 
-        Map<ExpenseCategory, BigDecimal> categoryTotals =
-                new EnumMap<>(ExpenseCategory.class);
+        Map<String, BigDecimal> result =
+                new LinkedHashMap<>();
 
         for (Expense expense : expenses) {
-            categoryTotals.merge(
+            result.merge(
                     expense.getCategory(),
                     expense.getAmount(),
                     BigDecimal::add
             );
         }
-
-        Map<String, BigDecimal> result =
-                new java.util.LinkedHashMap<>();
-
-        categoryTotals.forEach(
-                (category, amount) ->
-                        result.put(
-                                category.name(),
-                                amount
-                        )
-        );
 
         return ExpenseSummaryResponse.builder()
                 .totalExpenses(totalExpenses)
@@ -192,12 +198,22 @@ public class ExpenseServiceImpl implements ExpenseService {
     private ExpenseResponse mapToResponse(
             Expense expense) {
 
+        ExpenseCategory category;
+
+        try {
+            category = ExpenseCategory.valueOf(
+                    expense.getCategory()
+            );
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            category = ExpenseCategory.MISCELLANEOUS;
+        }
+
         return ExpenseResponse.builder()
                 .id(expense.getId())
-                .category(expense.getCategory())
+                .category(category)
                 .amount(expense.getAmount())
-                .expenseDate(expense.getExpenseDate())
-                .description(expense.getDescription())
+                .expenseDate(expense.getDate())
+                .description(expense.getNotes())
                 .build();
     }
 }
