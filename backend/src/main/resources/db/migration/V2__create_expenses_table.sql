@@ -32,6 +32,9 @@ ALTER TABLE expenses
     DROP CONSTRAINT IF EXISTS fk_expenses_trip;
 
 ALTER TABLE expenses
+    DROP CONSTRAINT IF EXISTS fk_expense_trip;
+
+ALTER TABLE expenses
     ADD CONSTRAINT fk_expense_trip
         FOREIGN KEY (trip_id)
         REFERENCES trips(id)
@@ -45,3 +48,4 @@ CREATE INDEX IF NOT EXISTS idx_expenses_trip_date
 -- Keep the initial trip schema aligned with the existing Trip entity.
 ALTER TABLE trips
     ADD COLUMN IF NOT EXISTS created_at TIMESTAMP;
+

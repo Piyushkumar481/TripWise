@@ -2,18 +2,25 @@ import { useEffect, useState } from "react"
 import { Receipt, RefreshCw } from "lucide-react"
 import { useOutletContext, useParams } from "react-router-dom"
 
-import TripModulePage from "../components/trip/TripModulePage"
+import AddExpenseModal from "../components/trip/AddExpenseModal"
 import TripEmptyState from "../components/trip/TripEmptyState"
-import { getExpenses } from "../services/expenseService"
+import TripModulePage from "../components/trip/TripModulePage"
+import {
+  createExpense,
+  getExpenses,
+} from "../services/expenseService"
 import { getApiErrorMessage } from "../utils/errorHandler"
 
 function TripExpenses() {
   const { id } = useParams()
-  useOutletContext()
+  const { trip } = useOutletContext()
 
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
 
   const loadExpenses = async () => {
     try {
@@ -40,6 +47,51 @@ function TripExpenses() {
       loadExpenses()
     }
   }, [id])
+
+  const handleAddExpense = async (expenseData) => {
+    try {
+      setSubmitting(true)
+      setSubmitError("")
+
+      const response = await createExpense(
+        id,
+        expenseData
+      )
+
+      const createdExpense = response.data
+
+      setExpenses((currentExpenses) =>
+        [...currentExpenses, createdExpense].sort(
+          (a, b) => a.date.localeCompare(b.date)
+        )
+      )
+
+      setIsModalOpen(false)
+    } catch (error) {
+      setSubmitError(
+        getApiErrorMessage(
+          error,
+          "Unable to add this expense."
+        )
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const openExpenseModal = () => {
+    setSubmitError("")
+    setIsModalOpen(true)
+  }
+
+  const closeExpenseModal = () => {
+    if (submitting) {
+      return
+    }
+
+    setIsModalOpen(false)
+    setSubmitError("")
+  }
 
   return (
     <TripModulePage
@@ -84,15 +136,36 @@ function TripExpenses() {
             title="No expenses yet"
             description="Start tracking your trip spending by adding your first expense."
             actionLabel="Add expense"
-            onAction={() => {}}
+            onAction={openExpenseModal}
           />
         )}
 
       {!loading &&
         !error &&
         expenses.length > 0 && (
-          <ExpenseList expenses={expenses} />
+          <div className="space-y-5">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={openExpenseModal}
+                className="rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+              >
+                + Add expense
+              </button>
+            </div>
+
+            <ExpenseList expenses={expenses} />
+          </div>
         )}
+
+      <AddExpenseModal
+        isOpen={isModalOpen}
+        onClose={closeExpenseModal}
+        onSubmit={handleAddExpense}
+        trip={trip}
+        submitting={submitting}
+        error={submitError}
+      />
     </TripModulePage>
   )
 }
@@ -103,39 +176,39 @@ function ExpenseList({ expenses }) {
       {expenses.map((expense) => (
         <article
           key={expense.id}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-cyan-400/20 hover:bg-white/[0.04]"
+          className="rounded-2xl border border-[#d9e5e2] bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b9dfda] hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)]"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-white">
+                <h3 className="font-semibold text-slate-900">
                   {expense.title}
                 </h3>
 
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-400">
+                <span className="rounded-full border border-[#d7e5e2] bg-[#f1f8f6] px-2.5 py-1 text-[11px] font-medium text-[#087f82]">
                   {expense.category}
                 </span>
               </div>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-600">
                 {formatExpenseDate(expense.date)}
               </p>
 
               {expense.paymentMethod && (
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-600">
                   Paid via {expense.paymentMethod}
                 </p>
               )}
 
               {expense.notes && (
-                <p className="mt-3 text-sm leading-6 text-slate-400">
+                <p className="mt-3 text-sm leading-6 text-slate-600">
                   {expense.notes}
                 </p>
               )}
             </div>
 
             <div className="shrink-0">
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-slate-900">
                 {formatCurrency(expense.amount)}
               </p>
             </div>
@@ -147,7 +220,9 @@ function ExpenseList({ expenses }) {
 }
 
 function formatExpenseDate(date) {
-  if (!date) return "No date"
+  if (!date) {
+    return "No date"
+  }
 
   const parsedDate = new Date(`${date}T00:00:00`)
 
@@ -181,3 +256,5 @@ function formatCurrency(amount) {
 }
 
 export default TripExpenses
+
+
