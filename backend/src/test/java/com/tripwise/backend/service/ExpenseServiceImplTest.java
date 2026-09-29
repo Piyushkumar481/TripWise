@@ -112,7 +112,7 @@ class ExpenseServiceImplTest {
         assertNotNull(response);
 
         assertEquals(
-                ExpenseCategory.FOOD,
+                "FOOD",
                 response.getCategory()
         );
 
@@ -217,3 +217,6 @@ class ExpenseServiceImplTest {
         );
     }
 }
+
+
+

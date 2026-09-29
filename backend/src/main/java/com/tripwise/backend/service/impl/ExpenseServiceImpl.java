@@ -194,26 +194,19 @@ public class ExpenseServiceImpl implements ExpenseService {
                                 "Trip not found"
                         ));
     }
-
     private ExpenseResponse mapToResponse(
             Expense expense) {
 
-        ExpenseCategory category;
-
-        try {
-            category = ExpenseCategory.valueOf(
-                    expense.getCategory()
-            );
-        } catch (IllegalArgumentException | NullPointerException ex) {
-            category = ExpenseCategory.MISCELLANEOUS;
-        }
-
         return ExpenseResponse.builder()
                 .id(expense.getId())
-                .category(category)
+                .tripId(expense.getTrip().getId())
+                .title(expense.getTitle())
                 .amount(expense.getAmount())
-                .expenseDate(expense.getDate())
-                .description(expense.getNotes())
+                .date(expense.getDate())
+                .category(expense.getCategory())
+                .paymentMethod(expense.getPaymentMethod())
+                .notes(expense.getNotes())
                 .build();
     }
 }
+
