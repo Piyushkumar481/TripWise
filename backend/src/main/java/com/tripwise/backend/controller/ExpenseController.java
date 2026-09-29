@@ -1,17 +1,12 @@
 package com.tripwise.backend.controller;
 
 import com.tripwise.backend.dto.ApiResponse;
-import com.tripwise.backend.dto.CreateExpenseRequest;
+import com.tripwise.backend.dto.ExpenseRequest;
 import com.tripwise.backend.dto.ExpenseResponse;
-import com.tripwise.backend.dto.ExpenseSummaryResponse;
-import com.tripwise.backend.service.interfaces.ExpenseService;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
-
+import com.tripwise.backend.service.ExpenseService;
 import jakarta.validation.Valid;
-
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,47 +17,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trips/{tripId}/expenses")
 @RequiredArgsConstructor
-@Tag(
-        name = "Expenses",
-        description = "Trip expense management APIs"
-)
 public class ExpenseController {
 
     private final ExpenseService expenseService;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<ExpenseResponse>> createExpense(
-            Authentication authentication,
-            @PathVariable Long tripId,
-            @Valid @RequestBody CreateExpenseRequest request) {
-
-        ExpenseResponse expense =
-                expenseService.createExpense(
-                        authentication.getName(),
-                        tripId,
-                        request
-                );
-
-        ApiResponse<ExpenseResponse> response =
-                ApiResponse.<ExpenseResponse>builder()
-                        .success(true)
-                        .message("Expense created successfully.")
-                        .data(expense)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-        return ResponseEntity.ok(response);
-    }
-
     @GetMapping
     public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getExpenses(
-            Authentication authentication,
-            @PathVariable Long tripId) {
+            @PathVariable Long tripId,
+            Authentication authentication) {
 
         List<ExpenseResponse> expenses =
                 expenseService.getExpenses(
-                        authentication.getName(),
-                        tripId
+                        tripId,
+                        authentication.getName()
                 );
 
         ApiResponse<List<ExpenseResponse>> response =
@@ -76,98 +43,70 @@ public class ExpenseController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/summary")
-    public ResponseEntity<ApiResponse<ExpenseSummaryResponse>> getExpenseSummary(
-            Authentication authentication,
-            @PathVariable Long tripId) {
-
-        ExpenseSummaryResponse summary =
-                expenseService.getExpenseSummary(
-                        authentication.getName(),
-                        tripId
-                );
-
-        ApiResponse<ExpenseSummaryResponse> response =
-                ApiResponse.<ExpenseSummaryResponse>builder()
-                        .success(true)
-                        .message("Expense summary retrieved successfully.")
-                        .data(summary)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{expenseId:\\d+}")
-    public ResponseEntity<ApiResponse<ExpenseResponse>> getExpense(
-            Authentication authentication,
+    @PostMapping
+    public ResponseEntity<ApiResponse<ExpenseResponse>> createExpense(
             @PathVariable Long tripId,
-            @PathVariable Long expenseId) {
+            @Valid @RequestBody ExpenseRequest request,
+            Authentication authentication) {
 
-        ExpenseResponse expense =
-                expenseService.getExpense(
-                        authentication.getName(),
+        ExpenseResponse created =
+                expenseService.createExpense(
                         tripId,
-                        expenseId
+                        request,
+                        authentication.getName()
                 );
 
         ApiResponse<ExpenseResponse> response =
                 ApiResponse.<ExpenseResponse>builder()
                         .success(true)
-                        .message("Expense retrieved successfully.")
-                        .data(expense)
+                        .message("Expense created successfully.")
+                        .data(created)
                         .timestamp(LocalDateTime.now())
                         .build();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
-    @PutMapping("/{expenseId:\\d+}")
+    @PutMapping("/{expenseId}")
     public ResponseEntity<ApiResponse<ExpenseResponse>> updateExpense(
-            Authentication authentication,
             @PathVariable Long tripId,
             @PathVariable Long expenseId,
-            @Valid @RequestBody CreateExpenseRequest request) {
+            @Valid @RequestBody ExpenseRequest request,
+            Authentication authentication) {
 
-        ExpenseResponse expense =
+        ExpenseResponse updated =
                 expenseService.updateExpense(
-                        authentication.getName(),
                         tripId,
                         expenseId,
-                        request
+                        request,
+                        authentication.getName()
                 );
 
         ApiResponse<ExpenseResponse> response =
                 ApiResponse.<ExpenseResponse>builder()
                         .success(true)
                         .message("Expense updated successfully.")
-                        .data(expense)
+                        .data(updated)
                         .timestamp(LocalDateTime.now())
                         .build();
 
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{expenseId:\\d+}")
-    public ResponseEntity<ApiResponse<Void>> deleteExpense(
-            Authentication authentication,
+    @DeleteMapping("/{expenseId}")
+    public ResponseEntity<Void> deleteExpense(
             @PathVariable Long tripId,
-            @PathVariable Long expenseId) {
+            @PathVariable Long expenseId,
+            Authentication authentication) {
 
         expenseService.deleteExpense(
-                authentication.getName(),
                 tripId,
-                expenseId
+                expenseId,
+                authentication.getName()
         );
 
-        ApiResponse<Void> response =
-                ApiResponse.<Void>builder()
-                        .success(true)
-                        .message("Expense deleted successfully.")
-                        .data(null)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 }
