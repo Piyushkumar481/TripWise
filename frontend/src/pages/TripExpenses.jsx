@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react"
-import { Receipt, RefreshCw } from "lucide-react"
+import {
+  Pencil,
+  Receipt,
+  RefreshCw,
+  Trash2,
+} from "lucide-react"
 import { useOutletContext, useParams } from "react-router-dom"
 
+import ConfirmModal from "../components/ConfirmModal"
 import AddExpenseModal from "../components/trip/AddExpenseModal"
 import TripEmptyState from "../components/trip/TripEmptyState"
 import TripModulePage from "../components/trip/TripModulePage"
 import {
   createExpense,
+  deleteExpense,
   getExpenses,
+  updateExpense,
 } from "../services/expenseService"
 import { getApiErrorMessage } from "../utils/errorHandler"
 
@@ -21,6 +29,10 @@ function TripExpenses() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
+  const [editingExpense, setEditingExpense] = useState(null)
+  const [deletingExpense, setDeletingExpense] = useState(null)
+  const [deleteError, setDeleteError] = useState("")
+  const [deleting, setDeleting] = useState(false)
 
   const loadExpenses = async () => {
     try {
@@ -48,30 +60,56 @@ function TripExpenses() {
     }
   }, [id])
 
-  const handleAddExpense = async (expenseData) => {
+  const handleSubmitExpense = async (expenseData) => {
     try {
       setSubmitting(true)
       setSubmitError("")
 
-      const response = await createExpense(
-        id,
-        expenseData
-      )
-
-      const createdExpense = response.data
-
-      setExpenses((currentExpenses) =>
-        [...currentExpenses, createdExpense].sort(
-          (a, b) => a.date.localeCompare(b.date)
+      if (editingExpense) {
+        const response = await updateExpense(
+          id,
+          editingExpense.id,
+          expenseData
         )
-      )
+
+        const updatedExpense = response.data
+
+        setExpenses((currentExpenses) =>
+          currentExpenses
+            .map((expense) =>
+              expense.id === updatedExpense.id
+                ? updatedExpense
+                : expense
+            )
+            .sort((a, b) =>
+              a.date.localeCompare(b.date)
+            )
+        )
+      } else {
+        const response = await createExpense(
+          id,
+          expenseData
+        )
+
+        const createdExpense = response.data
+
+        setExpenses((currentExpenses) =>
+          [...currentExpenses, createdExpense].sort(
+            (a, b) =>
+              a.date.localeCompare(b.date)
+          )
+        )
+      }
 
       setIsModalOpen(false)
+      setEditingExpense(null)
     } catch (error) {
       setSubmitError(
         getApiErrorMessage(
           error,
-          "Unable to add this expense."
+          editingExpense
+            ? "Unable to update this expense."
+            : "Unable to add this expense."
         )
       )
     } finally {
@@ -79,8 +117,49 @@ function TripExpenses() {
     }
   }
 
+  const handleEditExpense = (expense) => {
+    setSubmitError("")
+    setEditingExpense(expense)
+    setIsModalOpen(true)
+  }
+
+  const handleDeleteExpense = async () => {
+    if (!deletingExpense) {
+      return
+    }
+
+    try {
+      setDeleting(true)
+      setDeleteError("")
+
+      await deleteExpense(
+        id,
+        deletingExpense.id
+      )
+
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter(
+          (expense) =>
+            expense.id !== deletingExpense.id
+        )
+      )
+
+      setDeletingExpense(null)
+    } catch (error) {
+      setDeleteError(
+        getApiErrorMessage(
+          error,
+          "Unable to delete this expense."
+        )
+      )
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const openExpenseModal = () => {
     setSubmitError("")
+    setEditingExpense(null)
     setIsModalOpen(true)
   }
 
@@ -90,7 +169,22 @@ function TripExpenses() {
     }
 
     setIsModalOpen(false)
+    setEditingExpense(null)
     setSubmitError("")
+  }
+
+  const openDeleteConfirmation = (expense) => {
+    setDeleteError("")
+    setDeletingExpense(expense)
+  }
+
+  const closeDeleteConfirmation = () => {
+    if (deleting) {
+      return
+    }
+
+    setDeletingExpense(null)
+    setDeleteError("")
   }
 
   return (
@@ -154,23 +248,53 @@ function TripExpenses() {
               </button>
             </div>
 
-            <ExpenseList expenses={expenses} />
+            <ExpenseList
+              expenses={expenses}
+              onEdit={handleEditExpense}
+              onDelete={openDeleteConfirmation}
+            />
           </div>
         )}
 
       <AddExpenseModal
         isOpen={isModalOpen}
         onClose={closeExpenseModal}
-        onSubmit={handleAddExpense}
+        onSubmit={handleSubmitExpense}
         trip={trip}
         submitting={submitting}
         error={submitError}
+        editingExpense={editingExpense}
+      />
+
+      {deleteError && (
+        <div className="fixed bottom-6 right-6 z-[110] max-w-sm rounded-2xl border border-red-400/20 bg-slate-900 px-4 py-3 text-sm text-red-300 shadow-2xl">
+          {deleteError}
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={Boolean(deletingExpense)}
+        onCancel={closeDeleteConfirmation}
+        onConfirm={handleDeleteExpense}
+        title="Delete expense?"
+        message={
+          deletingExpense
+            ? `Are you sure you want to delete "${deletingExpense.title}"?`
+            : ""
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        loading={deleting}
       />
     </TripModulePage>
   )
 }
 
-function ExpenseList({ expenses }) {
+function ExpenseList({
+  expenses,
+  onEdit,
+  onDelete,
+}) {
   return (
     <div className="space-y-3">
       {expenses.map((expense) => (
@@ -207,10 +331,32 @@ function ExpenseList({ expenses }) {
               )}
             </div>
 
-            <div className="shrink-0">
-              <p className="text-lg font-bold text-slate-900">
-                {formatCurrency(expense.amount)}
-              </p>
+            <div className="flex shrink-0 items-start gap-2">
+              <div className="text-right">
+                <p className="text-lg font-bold text-slate-900">
+                  {formatCurrency(expense.amount)}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onEdit(expense)}
+                  className="rounded-lg p-2 text-slate-500 transition hover:bg-[#eef8f6] hover:text-[#087f82]"
+                  aria-label={`Edit ${expense.title}`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDelete(expense)}
+                  className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-500"
+                  aria-label={`Delete ${expense.title}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </article>
@@ -256,5 +402,3 @@ function formatCurrency(amount) {
 }
 
 export default TripExpenses
-
-
