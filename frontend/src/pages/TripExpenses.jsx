@@ -10,6 +10,7 @@ import { useOutletContext, useParams } from "react-router-dom"
 import ConfirmModal from "../components/ConfirmModal"
 import AddExpenseModal from "../components/trip/AddExpenseModal"
 import ExpenseSummary from "../components/trip/ExpenseSummary"
+import ExpenseCategoryBreakdown from "../components/trip/ExpenseCategoryBreakdown"
 import TripEmptyState from "../components/trip/TripEmptyState"
 import TripModulePage from "../components/trip/TripModulePage"
 import {
@@ -226,6 +227,7 @@ function TripExpenses() {
       {!loading && !error && (
         <div className="space-y-6">
           <ExpenseSummary expenses={expenses} trip={trip} />
+          <ExpenseCategoryBreakdown expenses={expenses} />
 
           {expenses.length > 0 ? (
             <>
@@ -402,5 +404,6 @@ function formatCurrency(amount) {
 }
 
 export default TripExpenses
+
 
 
