@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 import {
   Pencil,
   Receipt,
@@ -9,6 +9,7 @@ import { useOutletContext, useParams } from "react-router-dom"
 
 import ConfirmModal from "../components/ConfirmModal"
 import AddExpenseModal from "../components/trip/AddExpenseModal"
+import ExpenseSummary from "../components/trip/ExpenseSummary"
 import TripEmptyState from "../components/trip/TripEmptyState"
 import TripModulePage from "../components/trip/TripModulePage"
 import {
@@ -222,40 +223,39 @@ function TripExpenses() {
         </div>
       )}
 
-      {!loading &&
-        !error &&
-        expenses.length === 0 && (
-          <TripEmptyState
-            icon={Receipt}
-            title="No expenses yet"
-            description="Start tracking your trip spending by adding your first expense."
-            actionLabel="Add expense"
-            onAction={openExpenseModal}
-          />
-        )}
+      {!loading && !error && (
+        <div className="space-y-6">
+          <ExpenseSummary expenses={expenses} trip={trip} />
 
-      {!loading &&
-        !error &&
-        expenses.length > 0 && (
-          <div className="space-y-5">
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={openExpenseModal}
-                className="rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
-              >
-                + Add expense
-              </button>
-            </div>
+          {expenses.length > 0 ? (
+            <>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={openExpenseModal}
+                  className="rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+                >
+                  + Add expense
+                </button>
+              </div>
 
-            <ExpenseList
-              expenses={expenses}
-              onEdit={handleEditExpense}
-              onDelete={openDeleteConfirmation}
+              <ExpenseList
+                expenses={expenses}
+                onEdit={handleEditExpense}
+                onDelete={openDeleteConfirmation}
+              />
+            </>
+          ) : (
+            <TripEmptyState
+              icon={Receipt}
+              title="No expenses yet"
+              description="Your spending summary will update automatically when you record your first trip expense."
+              actionLabel="Add expense"
+              onAction={openExpenseModal}
             />
-          </div>
-        )}
-
+          )}
+        </div>
+      )}
       <AddExpenseModal
         isOpen={isModalOpen}
         onClose={closeExpenseModal}
@@ -402,3 +402,5 @@ function formatCurrency(amount) {
 }
 
 export default TripExpenses
+
+

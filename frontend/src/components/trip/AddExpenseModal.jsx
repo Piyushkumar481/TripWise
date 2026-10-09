@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+﻿import { useEffect, useState } from "react"
 import { X } from "lucide-react"
 
 function AddExpenseModal({
@@ -237,13 +237,13 @@ function AddExpenseModal({
                 onChange={handleChange}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
               >
-                <option value="">Select category</option>
-                <option value="Accommodation">Accommodation</option>
-                <option value="Food">Food</option>
-                <option value="Transport">Transport</option>
-                <option value="Activities">Activities</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Other">Other</option>
+                <option value="" className="bg-slate-900 text-white">Select category</option>
+                <option value="Accommodation" className="bg-slate-900 text-white">Accommodation</option>
+                <option value="Food" className="bg-slate-900 text-white">Food</option>
+                <option value="Transport" className="bg-slate-900 text-white">Transport</option>
+                <option value="Activities" className="bg-slate-900 text-white">Activities</option>
+                <option value="Shopping" className="bg-slate-900 text-white">Shopping</option>
+                <option value="Other" className="bg-slate-900 text-white">Other</option>
               </select>
             </div>
 
@@ -262,12 +262,12 @@ function AddExpenseModal({
                 onChange={handleChange}
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/10"
               >
-                <option value="">Select payment method</option>
-                <option value="UPI">UPI</option>
-                <option value="Card">Card</option>
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Other">Other</option>
+                <option value="" className="bg-slate-900 text-white">Select payment method</option>
+                <option value="UPI" className="bg-slate-900 text-white">UPI</option>
+                <option value="Card" className="bg-slate-900 text-white">Card</option>
+                <option value="Cash" className="bg-slate-900 text-white">Cash</option>
+                <option value="Bank Transfer" className="bg-slate-900 text-white">Bank Transfer</option>
+                <option value="Other" className="bg-slate-900 text-white">Other</option>
               </select>
             </div>
           </div>
@@ -321,3 +321,4 @@ function AddExpenseModal({
 }
 
 export default AddExpenseModal
+
