@@ -9,6 +9,12 @@
   ChartNoAxesColumnIncreasing,
 } from "lucide-react"
 
+import {
+  calculateCategoryTotals,
+  calculateTotalExpenses,
+  formatExpenseCurrency,
+} from "../../utils/expenseUtils"
+
 const CATEGORY_CONFIG = {
   Food: {
     icon: Utensils,
@@ -55,28 +61,10 @@ const DEFAULT_CONFIG = {
   background: "bg-slate-100",
 }
 
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2,
-  }).format(amount)
-}
-
 function ExpenseCategoryBreakdown({ expenses = [] }) {
-  const categoryTotals = expenses.reduce((totals, expense) => {
-    const category = expense.category?.trim() || "Other"
-    const amount = Number(expense.amount) || 0
+  const categoryTotals = calculateCategoryTotals(expenses)
 
-    totals[category] = (totals[category] || 0) + amount
-
-    return totals
-  }, {})
-
-  const totalSpent = expenses.reduce(
-    (total, expense) => total + (Number(expense.amount) || 0),
-    0
-  )
+  const totalSpent = calculateTotalExpenses(expenses)
 
   const categories = Object.entries(categoryTotals)
     .map(([name, amount]) => ({
@@ -151,7 +139,7 @@ function ExpenseCategoryBreakdown({ expenses = [] }) {
                     </div>
 
                     <p className="shrink-0 text-sm font-semibold text-slate-900">
-                      {formatCurrency(category.amount)}
+                      {formatExpenseCurrency(category.amount)}
                     </p>
                   </div>
 
@@ -200,7 +188,7 @@ function ExpenseCategoryBreakdown({ expenses = [] }) {
           </p>
 
           <p className="mt-2 break-words text-2xl font-bold text-slate-900">
-            {formatCurrency(totalSpent)}
+            {formatExpenseCurrency(totalSpent)}
           </p>
 
           <p className="mt-2 text-xs text-slate-500">
@@ -221,7 +209,7 @@ function ExpenseCategoryBreakdown({ expenses = [] }) {
               </p>
 
               <p className="mt-1 text-sm font-semibold text-teal-700">
-                {formatCurrency(highestCategory.amount)}
+                {formatExpenseCurrency(highestCategory.amount)}
               </p>
 
               <p className="mt-2 text-xs text-slate-500">
@@ -253,3 +241,5 @@ function ExpenseCategoryBreakdown({ expenses = [] }) {
 }
 
 export default ExpenseCategoryBreakdown
+
+
