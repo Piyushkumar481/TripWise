@@ -92,6 +92,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(PackingItemNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePackingItemNotFound(
+            PackingItemNotFoundException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                "Not Found",
+                exception.getMessage(),
+                request
+        );
+    }
     @ExceptionHandler(TripNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleTripNotFound(
             TripNotFoundException exception,
