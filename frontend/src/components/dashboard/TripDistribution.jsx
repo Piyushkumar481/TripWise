@@ -1,4 +1,5 @@
 import { Activity, CalendarDays, CheckCircle2 } from "lucide-react"
+import DashboardSectionHeader from "./DashboardSectionHeader"
 
 const distributionItems = [
   {
@@ -26,22 +27,17 @@ const distributionItems = [
 
 function TripDistribution({ distribution, loading = false }) {
   return (
-    <section className="rounded-2xl border border-[#e1e7e3] bg-white p-5 shadow-[0_7px_25px_rgba(23,35,60,0.035)] sm:p-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#087f82]">
-          TRAVEL ANALYTICS
-        </p>
+    <section
+      aria-labelledby="trip-distribution-title"
+      className="min-w-0 rounded-2xl border border-[#e1e7e3] bg-white p-5 shadow-[0_7px_25px_rgba(23,35,60,0.035)] sm:p-6"
+    >
+      <DashboardSectionHeader
+        eyebrow="TRAVEL ANALYTICS"
+        title="Your trip distribution"
+        description="See how your trips are distributed across different stages."
+      />
 
-        <h2 className="mt-2 text-lg font-semibold text-[#17233c]">
-          Your trip distribution
-        </h2>
-
-        <p className="mt-1 text-sm text-[#71808d]">
-          See how your trips are distributed across different stages.
-        </p>
-      </div>
-
-      <div className="mt-6 space-y-6">
+      <div className="space-y-6">
         {distributionItems.map((item) => {
           const Icon = item.icon
 
@@ -56,17 +52,19 @@ function TripDistribution({ distribution, loading = false }) {
             : 0
 
           const count = Number(data.count)
-          const safeCount = Number.isFinite(count) ? Math.max(0, count) : 0
+          const safeCount = Number.isFinite(count)
+            ? Math.max(0, count)
+            : 0
 
           return (
             <div key={item.key}>
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-xl border border-[#e1e7e3] bg-[#f7faf8]">
-                    <Icon size={18} className={item.color} />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[#e1e7e3] bg-[#f7faf8]">
+                    <Icon size={18} className={item.color} aria-hidden="true" />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-[#17233c]">
                       {item.label}
                     </p>
@@ -79,7 +77,7 @@ function TripDistribution({ distribution, loading = false }) {
                   </div>
                 </div>
 
-                <span className="text-sm font-semibold text-[#52616f]">
+                <span className="shrink-0 text-sm font-semibold text-[#52616f]">
                   {loading ? "—" : `${percentage}%`}
                 </span>
               </div>
@@ -91,6 +89,9 @@ function TripDistribution({ distribution, loading = false }) {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={loading ? 0 : percentage}
+                aria-valuetext={
+                  loading ? "Calculating" : `${percentage}%`
+                }
               >
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${item.barColor}`}
