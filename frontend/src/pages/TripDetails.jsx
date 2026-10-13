@@ -1,12 +1,14 @@
-﻿import { useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
-  ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock3,
   FileText,
+  Luggage,
   MapPin,
   Package,
+  Receipt,
+  StickyNote,
   Wallet,
 } from "lucide-react"
 import { useNavigate, useOutletContext } from "react-router-dom"
@@ -19,6 +21,21 @@ import {
 import TripWorkspaceCard from "../components/trip/TripWorkspaceCard"
 import TripWorkspaceSection from "../components/trip/TripWorkspaceSection"
 import TripEmptyState from "../components/trip/TripEmptyState"
+import TripWorkspaceSummaryCard from "../components/trip/TripWorkspaceSummaryCard"
+
+import { getItinerary } from "../services/itineraryService"
+import { getExpenses } from "../services/expenseService"
+import { getPackingProgress } from "../services/packingService"
+import { getTripNotesSummary } from "../services/tripNoteService"
+
+import {
+  formatTripCurrency,
+  getExpenseTotal,
+  getPackingPercentage,
+  unwrapApiData,
+} from "../utils/tripWorkspaceUtils"
+
+import { getApiErrorMessage } from "../utils/errorHandler"
 
 function TripDetails() {
   const { trip } = useOutletContext()
@@ -26,6 +43,241 @@ function TripDetails() {
 
   const status = getTripStatus(trip)
   const statusStyles = getTripStatusStyles(status)
+
+  const [workspaceSummary, setWorkspaceSummary] = useState({
+    itinerary: [],
+    expenses: [],
+    packing: {
+      totalItems: 0,
+      packedItems: 0,
+      unpackedItems: 0,
+      percentage: 0,
+    },
+    notes: {
+      totalNotes: 0,
+      pinnedNotes: 0,
+      unpinnedNotes: 0,
+    },
+  })
+
+  const [summaryLoading, setSummaryLoading] = useState(true)
+  const [summaryError, setSummaryError] = useState("")
+
+  const loadWorkspaceSummary = useCallback(async () => {
+    if (!trip.id) return
+
+    setSummaryLoading(true)
+    setSummaryError("")
+
+    try {
+      const results = await Promise.allSettled([
+        getItinerary(trip.id),
+        getExpenses(trip.id),
+        getPackingProgress(trip.id),
+        getTripNotesSummary(trip.id),
+      ])
+
+      const errors = []
+      const [itineraryResult, expensesResult, packingResult, notesResult] =
+        results
+
+      let itinerary = []
+      let expenses = []
+      let packing = {
+        totalItems: 0,
+        packedItems: 0,
+        unpackedItems: 0,
+        percentage: 0,
+      }
+      let notes = {
+        totalNotes: 0,
+        pinnedNotes: 0,
+        unpinnedNotes: 0,
+      }
+
+      if (itineraryResult.status === "fulfilled") {
+        const data = unwrapApiData(itineraryResult.value)
+        itinerary = Array.isArray(data) ? data : []
+      } else {
+        errors.push("itinerary")
+      }
+
+      if (expensesResult.status === "fulfilled") {
+        const data = unwrapApiData(expensesResult.value)
+        expenses = Array.isArray(data) ? data : []
+      } else {
+        errors.push("expenses")
+      }
+
+      if (packingResult.status === "fulfilled") {
+        const data = unwrapApiData(packingResult.value)
+
+        if (data && typeof data === "object") {
+          packing = {
+            totalItems: Number(data.totalItems) || 0,
+            packedItems: Number(data.packedItems) || 0,
+            unpackedItems: Number(data.unpackedItems) || 0,
+            percentage: Number(data.percentage) || 0,
+          }
+        }
+      } else {
+        errors.push("packing")
+      }
+
+      if (notesResult.status === "fulfilled") {
+        const data = unwrapApiData(notesResult.value)
+
+        if (data && typeof data === "object") {
+          notes = {
+            totalNotes: Number(data.totalNotes) || 0,
+            pinnedNotes: Number(data.pinnedNotes) || 0,
+            unpinnedNotes: Number(data.unpinnedNotes) || 0,
+          }
+        }
+      } else {
+        errors.push("notes")
+      }
+
+      setWorkspaceSummary({
+        itinerary,
+        expenses,
+        packing,
+        notes,
+      })
+
+      if (errors.length > 0) {
+        setSummaryError(
+          `Some workspace summaries could not be loaded: ${errors.join(", ")}.`
+        )
+      }
+    } catch (error) {
+      setSummaryError(getApiErrorMessage(error, "Unable to load trip overview."))
+    } finally {
+      setSummaryLoading(false)
+    }
+  }, [trip.id])
+
+  useEffect(() => {
+    let active = true
+
+    const loadInitialSummary = async () => {
+      setSummaryLoading(true)
+      setSummaryError("")
+
+      try {
+        const results = await Promise.allSettled([
+          getItinerary(trip.id),
+          getExpenses(trip.id),
+          getPackingProgress(trip.id),
+          getTripNotesSummary(trip.id),
+        ])
+
+        if (!active) return
+
+        const errors = []
+        const [itineraryResult, expensesResult, packingResult, notesResult] =
+          results
+
+        let itinerary = []
+        let expenses = []
+        let packing = {
+          totalItems: 0,
+          packedItems: 0,
+          unpackedItems: 0,
+          percentage: 0,
+        }
+        let notes = {
+          totalNotes: 0,
+          pinnedNotes: 0,
+          unpinnedNotes: 0,
+        }
+
+        if (itineraryResult.status === "fulfilled") {
+          const data = unwrapApiData(itineraryResult.value)
+          itinerary = Array.isArray(data) ? data : []
+        } else {
+          errors.push("itinerary")
+        }
+
+        if (expensesResult.status === "fulfilled") {
+          const data = unwrapApiData(expensesResult.value)
+          expenses = Array.isArray(data) ? data : []
+        } else {
+          errors.push("expenses")
+        }
+
+        if (packingResult.status === "fulfilled") {
+          const data = unwrapApiData(packingResult.value)
+
+          if (data && typeof data === "object") {
+            packing = {
+              totalItems: Number(data.totalItems) || 0,
+              packedItems: Number(data.packedItems) || 0,
+              unpackedItems: Number(data.unpackedItems) || 0,
+              percentage: Number(data.percentage) || 0,
+            }
+          }
+        } else {
+          errors.push("packing")
+        }
+
+        if (notesResult.status === "fulfilled") {
+          const data = unwrapApiData(notesResult.value)
+
+          if (data && typeof data === "object") {
+            notes = {
+              totalNotes: Number(data.totalNotes) || 0,
+              pinnedNotes: Number(data.pinnedNotes) || 0,
+              unpinnedNotes: Number(data.unpinnedNotes) || 0,
+            }
+          }
+        } else {
+          errors.push("notes")
+        }
+
+        setWorkspaceSummary({
+          itinerary,
+          expenses,
+          packing,
+          notes,
+        })
+
+        if (errors.length > 0) {
+          setSummaryError(
+            `Some workspace summaries could not be loaded: ${errors.join(", ")}.`
+          )
+        }
+      } catch (error) {
+        if (active) {
+          setSummaryError(
+            getApiErrorMessage(error, "Unable to load trip overview.")
+          )
+        }
+      } finally {
+        if (active) {
+          setSummaryLoading(false)
+        }
+      }
+    }
+
+    loadInitialSummary()
+
+    return () => {
+      active = false
+    }
+  }, [trip.id])
+  const itineraryCount = workspaceSummary.itinerary.length
+  const totalExpenses = getExpenseTotal(workspaceSummary.expenses)
+  const packingPercentage = getPackingPercentage(workspaceSummary.packing)
+  const noteCount = workspaceSummary.notes.totalNotes
+  const pinnedNoteCount = workspaceSummary.notes.pinnedNotes
+  const tripBudget = Number(trip?.budget) || 0
+  const remainingBudget = tripBudget - totalExpenses
+
+  const budgetUsedPercentage =
+    tripBudget > 0
+      ? Math.min(100, Math.round((totalExpenses / tripBudget) * 100))
+      : null
 
   const tripStats = useMemo(() => {
     if (!trip?.startDate || !trip?.endDate) {
@@ -57,8 +309,8 @@ function TripDetails() {
     const totalDuration =
       Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
 
-    let daysRemaining = 0
-    let progress = 0
+    let daysRemaining
+    let progress
 
     if (today < start) {
       daysRemaining = Math.ceil(
@@ -247,6 +499,87 @@ function TripDetails() {
           <span>{formatDate(trip.endDate)}</span>
         </div>
       </section>
+
+      <TripWorkspaceSection
+        eyebrow="YOUR TRIP AT A GLANCE"
+        title="Workspace overview"
+        description="See what's planned, spent, packed, and saved for this trip."
+        action={
+          <button
+            type="button"
+            onClick={loadWorkspaceSummary}
+            disabled={summaryLoading}
+            className="rounded-xl border border-[#e1e7e3] px-3 py-2 text-sm text-[#71808d] transition hover:bg-[#e8f7f5] hover:text-[#087f82] disabled:opacity-50"
+          >
+            {summaryLoading ? "Refreshing..." : "Refresh overview"}
+          </button>
+        }
+      >
+        {summaryError && (
+          <div
+            role="status"
+            className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800"
+          >
+            <p>{summaryError}</p>
+            <button
+              type="button"
+              onClick={loadWorkspaceSummary}
+              disabled={summaryLoading}
+              className="mt-2 font-medium underline underline-offset-4 disabled:opacity-50"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <TripWorkspaceSummaryCard
+            icon={CalendarDays}
+            title="Itinerary"
+            value={`${itineraryCount} ${itineraryCount === 1 ? "activity" : "activities"}`}
+            description="Activities scheduled for this trip."
+            loading={summaryLoading}
+            onAction={() => navigate(`/trips/${trip.id}/itinerary`)}
+          />
+
+          <TripWorkspaceSummaryCard
+            icon={Receipt}
+            title="Expenses"
+            value={formatTripCurrency(totalExpenses)}
+            description={
+              tripBudget > 0
+                ? `${formatTripCurrency(remainingBudget)} remaining from your budget.`
+                : "Set a trip budget to track your remaining funds."
+            }
+            progress={
+              budgetUsedPercentage === null
+                ? undefined
+                : budgetUsedPercentage
+            }
+            loading={summaryLoading}
+            onAction={() => navigate(`/trips/${trip.id}/expenses`)}
+          />
+
+          <TripWorkspaceSummaryCard
+            icon={Luggage}
+            title="Packing"
+            value={`${workspaceSummary.packing.packedItems}/${workspaceSummary.packing.totalItems}`}
+            description={`${workspaceSummary.packing.unpackedItems} items still to pack.`}
+            progress={packingPercentage}
+            loading={summaryLoading}
+            onAction={() => navigate(`/trips/${trip.id}/packing`)}
+          />
+
+          <TripWorkspaceSummaryCard
+            icon={StickyNote}
+            title="Notes"
+            value={String(noteCount)}
+            description={`${pinnedNoteCount} pinned ${pinnedNoteCount === 1 ? "note" : "notes"}.`}
+            loading={summaryLoading}
+            onAction={() => navigate(`/trips/${trip.id}/notes`)}
+          />
+        </div>
+      </TripWorkspaceSection>
 
       <TripWorkspaceSection
         eyebrow="Workspace"
