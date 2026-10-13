@@ -7,10 +7,12 @@ import DashboardSection from "../components/DashboardSection"
 import StatCard from "../components/StatCard"
 import UpcomingTrips from "../components/UpcomingTrips"
 import TravelInspiration from "../components/TravelInspiration"
+import TripDistribution from "../components/dashboard/TripDistribution"
+import DashboardInsights from "../components/dashboard/DashboardInsights"
 
 import { getTrips } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
-import { getTripStatus } from "../utils/tripUtils"
+import { calculateDashboardAnalytics, formatAnalyticsCurrency } from "../utils/dashboardAnalytics"
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -50,44 +52,22 @@ function Dashboard() {
     fetchTrips()
   }, [])
 
-  const dashboardStats = useMemo(() => {
-    const tripsWithStatus = trips.map((trip) => ({
-      trip,
-      status: getTripStatus(trip),
-    }))
+  const analytics = useMemo(
+    () => calculateDashboardAnalytics(trips),
+    [trips]
+  )
 
-    const upcomingTrips = tripsWithStatus
-      .filter(({ status }) => status === "UPCOMING")
-      .map(({ trip }) => trip)
-
-    const activeTrips = tripsWithStatus.filter(
-      ({ status }) => status === "ACTIVE"
-    )
-
-    const completedTrips = tripsWithStatus.filter(
-      ({ status }) => status === "COMPLETED"
-    )
-
-    const totalBudget = trips.reduce((total, trip) => {
-      return total + Number(trip.budget || 0)
-    }, 0)
-
-    return {
-      totalTrips: trips.length,
-      upcomingTrips: upcomingTrips.length,
-      activeTrips: activeTrips.length,
-      completedTrips: completedTrips.length,
-      totalBudget,
-      upcomingTripList: upcomingTrips.slice(0, 3),
-    }
-  }, [trips])
+  const dashboardStats = useMemo(() => ({
+    totalTrips: analytics.totalTrips,
+    upcomingTrips: analytics.upcomingTrips.length,
+    activeTrips: analytics.activeTrips.length,
+    completedTrips: analytics.completedTrips.length,
+    totalBudget: analytics.totalBudget,
+    upcomingTripList: analytics.upcomingTrips.slice(0, 3),
+  }), [analytics])
 
   const formatBudget = (amount) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount)
+    return formatAnalyticsCurrency(amount)
   }
 
   return (
@@ -153,6 +133,19 @@ function Dashboard() {
 
       </section>
 
+      <div className="space-y-8">
+        <DashboardInsights
+          analytics={analytics}
+          loading={loading}
+          onOpenTrip={(trip) => navigate(`/trips/${trip.id}`)}
+          onViewTrips={() => navigate("/trips")}
+        />
+
+        <TripDistribution
+          distribution={analytics.distribution}
+          loading={loading}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.65fr_0.85fr]">
 
         <DashboardSection
