@@ -17,6 +17,12 @@ import {
 } from "lucide-react"
 
 import TripModulePage from "../components/trip/TripModulePage"
+import ConfirmModal from "../components/ConfirmModal"
+import {
+  filterTripNotes,
+  getTripNoteCounts,
+  validateTripNote,
+} from "../utils/tripNoteUtils"
 import { getApiErrorMessage } from "../utils/errorHandler"
 import {
   createTripNote,
@@ -68,6 +74,7 @@ function TripNotes() {
   const [saving, setSaving] = useState(false)
 
   const [deletingNoteId, setDeletingNoteId] = useState(null)
+  const [noteToDelete, setNoteToDelete] = useState(null)
   const [pinningNoteId, setPinningNoteId] = useState(null)
 
   const loadNotes = useCallback(async () => {
@@ -123,38 +130,15 @@ function TripNotes() {
     }
   }, [tripId])
 
-  const pinnedCount = useMemo(
-    () => notes.filter((note) => note.pinned).length,
+  const noteCounts = useMemo(
+    () => getTripNoteCounts(notes),
     [notes]
   )
 
-  const unpinnedCount = notes.length - pinnedCount
-
-  const filteredNotes = useMemo(() => {
-    const query = search.trim().toLowerCase()
-
-    return [...notes]
-      .filter((note) => {
-        if (filter === "PINNED" && !note.pinned) return false
-        if (filter === "UNPINNED" && note.pinned) return false
-        if (!query) return true
-
-        return (
-          note.title?.toLowerCase().includes(query) ||
-          note.content?.toLowerCase().includes(query)
-        )
-      })
-      .sort((a, b) => {
-        if (Boolean(a.pinned) !== Boolean(b.pinned)) {
-          return a.pinned ? -1 : 1
-        }
-
-        return (
-          new Date(b.updatedAt || b.createdAt || 0).getTime() -
-          new Date(a.updatedAt || a.createdAt || 0).getTime()
-        )
-      })
-  }, [notes, search, filter])
+  const filteredNotes = useMemo(
+    () => filterTripNotes(notes, search, filter),
+    [notes, search, filter]
+  )
 
   const openCreateForm = () => {
     setEditingNote(null)
@@ -196,31 +180,27 @@ function TripNotes() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    if (
+      saving ||
+      deletingNoteId !== null ||
+      pinningNoteId !== null
+    ) {
+      return
+    }
+
     setFormError("")
     setActionError("")
 
+    const validationError = validateTripNote(form)
+
+    if (validationError) {
+      setFormError(validationError)
+      return
+    }
+
     const title = form.title.trim()
     const content = form.content.trim()
-
-    if (!title) {
-      setFormError("Please enter a note title.")
-      return
-    }
-
-    if (title.length > 150) {
-      setFormError("The title cannot exceed 150 characters.")
-      return
-    }
-
-    if (!content) {
-      setFormError("Please enter some note content.")
-      return
-    }
-
-    if (content.length > 20000) {
-      setFormError("The content cannot exceed 20,000 characters.")
-      return
-    }
 
     const noteData = {
       title,
@@ -260,7 +240,13 @@ function TripNotes() {
   }
 
   const handleTogglePinned = async (note) => {
-    if (pinningNoteId !== null || deletingNoteId !== null) return
+    if (
+      pinningNoteId !== null ||
+      deletingNoteId !== null ||
+      saving
+    ) {
+      return
+    }
 
     setPinningNoteId(note.id)
     setActionError("")
@@ -284,14 +270,30 @@ function TripNotes() {
     }
   }
 
-  const handleDelete = async (note) => {
-    if (deletingNoteId !== null || pinningNoteId !== null) return
+  const handleDelete = (note) => {
+    if (
+      saving ||
+      deletingNoteId !== null ||
+      pinningNoteId !== null
+    ) {
+      return
+    }
 
-    const confirmed = window.confirm(
-      `Delete "${note.title}"?\n\nThis action cannot be undone.`
-    )
+    setActionError("")
+    setNoteToDelete(note)
+  }
 
-    if (!confirmed) return
+  const confirmDelete = async () => {
+    if (
+      !noteToDelete ||
+      saving ||
+      deletingNoteId !== null ||
+      pinningNoteId !== null
+    ) {
+      return
+    }
+
+    const note = noteToDelete
 
     setDeletingNoteId(note.id)
     setActionError("")
@@ -308,6 +310,8 @@ function TripNotes() {
         setEditingNote(null)
         setForm({ ...EMPTY_FORM })
       }
+
+      setNoteToDelete(null)
     } catch (error) {
       setActionError(getApiErrorMessage(error))
     } finally {
@@ -315,16 +319,6 @@ function TripNotes() {
     }
   }
 
-  const startButton = (
-    <button
-      type="button"
-      onClick={openCreateForm}
-      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#087f82] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#076f72] focus:outline-none focus:ring-2 focus:ring-[#087f82] focus:ring-offset-2"
-    >
-      <Plus size={17} />
-      New note
-    </button>
-  )
 
   return (
     <TripModulePage
@@ -340,17 +334,17 @@ function TripNotes() {
           <SummaryCard
             icon={FileText}
             label="Total notes"
-            value={notes.length}
+            value={noteCounts.total}
           />
           <SummaryCard
             icon={Pin}
             label="Pinned notes"
-            value={pinnedCount}
+            value={noteCounts.pinned}
           />
           <SummaryCard
             icon={StickyNote}
             label="Unpinned notes"
-            value={unpinnedCount}
+            value={noteCounts.unpinned}
           />
         </section>
 
@@ -769,6 +763,24 @@ function TripNotes() {
           </section>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={Boolean(noteToDelete)}
+        title="Delete note?"
+        message={
+          noteToDelete
+            ? `Are you sure you want to delete "${noteToDelete.title}"?`
+            : ""
+        }
+        confirmText="Delete note"
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (deletingNoteId === null) {
+            setNoteToDelete(null)
+          }
+        }}
+        loading={deletingNoteId !== null}
+      />
     </TripModulePage>
   )
 }
