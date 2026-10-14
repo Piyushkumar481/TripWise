@@ -28,6 +28,7 @@ function AddItineraryItemModal({
     if (!isOpen) {
       return
     }
+    const timeoutId = setTimeout(() => {
 
     if (editingItem) {
       setFormData({
@@ -52,6 +53,9 @@ function AddItineraryItemModal({
     }
 
     setValidationError("")
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
   }, [isOpen, trip, editingItem])
 
   if (!isOpen) {

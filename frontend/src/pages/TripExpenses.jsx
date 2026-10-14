@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   Pencil,
   Receipt,
@@ -36,7 +36,7 @@ function TripExpenses() {
   const [deleteError, setDeleteError] = useState("")
   const [deleting, setDeleting] = useState(false)
 
-  const loadExpenses = async () => {
+  const loadExpenses = useCallback(async () => {
     try {
       setLoading(true)
       setError("")
@@ -54,13 +54,17 @@ function TripExpenses() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
   useEffect(() => {
-    if (id) {
+    if (!id) return
+
+    const timeoutId = setTimeout(() => {
       loadExpenses()
-    }
-  }, [id])
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
+  }, [id, loadExpenses])
 
   const handleSubmitExpense = async (expenseData) => {
     try {

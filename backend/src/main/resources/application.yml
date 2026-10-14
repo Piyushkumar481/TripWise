@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
   application:
     name: tripwise
 
@@ -31,3 +35,5 @@ tripwise:
       - application/pdf
       - image/jpeg
       - image/png
+    storage:
+      local-directory: ${TRIPWISE_DOCUMENT_STORAGE:./storage/documents}

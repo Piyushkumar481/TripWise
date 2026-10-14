@@ -1,5 +1,6 @@
 package com.tripwise.backend.service;
 
+import com.tripwise.backend.dto.DocumentDownload;
 import com.tripwise.backend.dto.DocumentRequest;
 import com.tripwise.backend.dto.TripDocumentResponse;
 import com.tripwise.backend.entity.DocumentCategory;
@@ -9,6 +10,9 @@ import com.tripwise.backend.exception.DocumentNotFoundException;
 import com.tripwise.backend.exception.TripNotFoundException;
 import com.tripwise.backend.repository.TripDocumentRepository;
 import com.tripwise.backend.repository.TripRepository;
+import com.tripwise.backend.service.interfaces.StorageService;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.mock.web.MockMultipartFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +36,12 @@ class TripDocumentServiceTest {
 
     @Mock
     private TripRepository tripRepository;
+
+    @Mock
+    private StorageService storageService;
+
+    @Mock
+    private DocumentFileValidator documentFileValidator;
 
     @InjectMocks
     private TripDocumentService tripDocumentService;
@@ -172,6 +182,7 @@ class TripDocumentServiceTest {
 
         tripDocumentService.deleteDocument(1L, 100L, "user@example.com");
 
+        verify(storageService).delete("test-storage-key");
         verify(tripDocumentRepository).delete(document);
     }
 
@@ -191,6 +202,55 @@ class TripDocumentServiceTest {
         verify(tripDocumentRepository, never()).delete(any(TripDocument.class));
     }
 
+    @Test
+    void downloadDocumentShouldReturnFileResource() {
+        TripDocument document = createDocument();
+        ByteArrayResource resource =
+                new ByteArrayResource("sample-pdf".getBytes());
+
+        when(tripRepository.findByIdAndUserEmail(1L, "user@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(tripDocumentRepository.findByIdAndTripId(100L, 1L))
+                .thenReturn(Optional.of(document));
+        when(storageService.load("test-storage-key"))
+                .thenReturn(resource);
+
+        DocumentDownload result = tripDocumentService.downloadDocument(
+                1L, 100L, "user@example.com");
+
+        assertSame(resource, result.resource());
+        assertEquals("flight.pdf", result.originalFileName());
+        assertEquals("application/pdf", result.contentType());
+        assertEquals(2048L, result.fileSize());
+    }
+
+    @Test
+    void downloadDocumentShouldRejectUnownedTrip() {
+        when(tripRepository.findByIdAndUserEmail(1L, "user@example.com"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                TripNotFoundException.class,
+                () -> tripDocumentService.downloadDocument(
+                        1L, 100L, "user@example.com"));
+
+        verifyNoInteractions(tripDocumentRepository, storageService);
+    }
+
+    @Test
+    void downloadDocumentShouldRejectMissingDocument() {
+        when(tripRepository.findByIdAndUserEmail(1L, "user@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(tripDocumentRepository.findByIdAndTripId(100L, 1L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                DocumentNotFoundException.class,
+                () -> tripDocumentService.downloadDocument(
+                        1L, 100L, "user@example.com"));
+
+        verifyNoInteractions(storageService);
+    }
     private TripDocument createDocument() {
         return TripDocument.builder()
                 .id(100L)

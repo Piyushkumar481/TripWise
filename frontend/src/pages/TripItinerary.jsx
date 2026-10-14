@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   CalendarDays,
   Clock3,
@@ -36,41 +36,32 @@ function TripItinerary() {
   const [deleteError, setDeleteError] = useState("")
   const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => {
-    let isActive = true
+  const loadItinerary = useCallback(async () => {
+    setLoading(true)
+    setError("")
 
-    const fetchItinerary = async () => {
-      setLoading(true)
-      setError("")
-
-      try {
-        const response = await getItinerary(id)
-
-        if (!isActive) return
-
-        setItems(response?.data || [])
-      } catch (error) {
-        if (!isActive) return
-
-        setError(
-          getApiErrorMessage(
-            error,
-            "Unable to load your itinerary."
-          )
+    try {
+      const response = await getItinerary(id)
+      setItems(response?.data || [])
+    } catch (error) {
+      setError(
+        getApiErrorMessage(
+          error,
+          "Unable to load your itinerary."
         )
-      } finally {
-        if (isActive) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchItinerary()
-
-    return () => {
-      isActive = false
+      )
+    } finally {
+      setLoading(false)
     }
   }, [id])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadItinerary()
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
+  }, [loadItinerary])
 
   const groupedItems = useMemo(() => {
     const sortedItems = [...items].sort((a, b) => {

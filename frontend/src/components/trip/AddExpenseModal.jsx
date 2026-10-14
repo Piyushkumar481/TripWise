@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { X } from "lucide-react"
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from "../../utils/expenseUtils"
 
@@ -28,6 +28,7 @@ function AddExpenseModal({
     if (!isOpen) {
       return
     }
+    const timeoutId = setTimeout(() => {
 
     if (editingExpense) {
       setFormData({
@@ -54,6 +55,9 @@ function AddExpenseModal({
     }
 
     setValidationError("")
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
   }, [isOpen, editingExpense, trip])
 
   if (!isOpen) {

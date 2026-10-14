@@ -1,5 +1,6 @@
 package com.tripwise.backend.service;
 
+import com.tripwise.backend.dto.DocumentDownload;
 import com.tripwise.backend.dto.DocumentRequest;
 import com.tripwise.backend.dto.TripDocumentResponse;
 import com.tripwise.backend.entity.DocumentCategory;
@@ -7,6 +8,12 @@ import com.tripwise.backend.entity.Trip;
 import com.tripwise.backend.entity.TripDocument;
 import com.tripwise.backend.exception.DocumentNotFoundException;
 import com.tripwise.backend.exception.TripNotFoundException;
+import com.tripwise.backend.exception.InvalidFileException;
+import com.tripwise.backend.service.interfaces.StorageService;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
+import java.io.IOException;
 import com.tripwise.backend.repository.TripDocumentRepository;
 import com.tripwise.backend.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +31,8 @@ public class TripDocumentService {
 
     private final TripDocumentRepository tripDocumentRepository;
     private final TripRepository tripRepository;
+    private final DocumentFileValidator documentFileValidator;
+    private final StorageService storageService;
 
     public List<TripDocumentResponse> getDocuments(
             Long tripId,
@@ -38,6 +47,77 @@ public class TripDocumentService {
                 .toList();
     }
 
+
+    @Transactional
+    public TripDocumentResponse uploadDocument(
+            Long tripId,
+            DocumentRequest request,
+            MultipartFile file,
+            String userEmail) {
+
+        Trip trip = getOwnedTrip(tripId, userEmail);
+        validateRequest(request);
+        documentFileValidator.validate(file);
+
+        String originalFileName = StringUtils.cleanPath(
+                file.getOriginalFilename() == null
+                        ? ""
+                        : file.getOriginalFilename());
+
+        if (originalFileName.length() > 255) {
+            throw new InvalidFileException(
+                    "Filename must not exceed 255 characters");
+        }
+
+        String storedFileName = storageService.store(file);
+
+        try {
+            TripDocument document = TripDocument.builder()
+                    .trip(trip)
+                    .title(request.getTitle().trim())
+                    .description(normalizeOptionalText(
+                            request.getDescription()))
+                    .originalFileName(originalFileName)
+                    .storageKey(storedFileName)
+                    .contentType(file.getContentType())
+                    .fileSize(file.getSize())
+                    .category(request.getCategory().name())
+                    .build();
+
+            return mapToResponse(
+                    tripDocumentRepository.save(document));
+
+        } catch (RuntimeException exception) {
+            try {
+                storageService.delete(storedFileName);
+            } catch (RuntimeException cleanupException) {
+                exception.addSuppressed(cleanupException);
+            }
+            throw exception;
+        }
+    }
+
+    public DocumentDownload downloadDocument(
+            Long tripId,
+            Long documentId,
+            String userEmail) {
+
+        getOwnedTrip(tripId, userEmail);
+
+        TripDocument document = tripDocumentRepository
+                .findByIdAndTripId(documentId, tripId)
+                .orElseThrow(() ->
+                        new DocumentNotFoundException(
+                                "Document not found"));
+
+        Resource resource = storageService.load(document.getStorageKey());
+
+        return new DocumentDownload(
+                resource,
+                document.getOriginalFileName(),
+                document.getContentType(),
+                document.getFileSize());
+    }
     @Transactional
     public TripDocumentResponse createDocument(
             Long tripId,
@@ -102,6 +182,12 @@ public class TripDocumentService {
                 .orElseThrow(() ->
                         new DocumentNotFoundException(
                                 "Document not found"));
+
+        String storageKey = document.getStorageKey();
+
+        if (storageKey != null && !storageKey.startsWith("pending/")) {
+            storageService.delete(storageKey);
+        }
 
         tripDocumentRepository.delete(document);
     }
