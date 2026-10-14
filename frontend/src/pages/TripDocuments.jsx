@@ -149,39 +149,12 @@ function TripDocuments() {
   }, [tripId])
 
   useEffect(() => {
-    let active = true
+    const timer = window.setTimeout(() => {
+      loadDocuments()
+    }, 0)
 
-    const fetchDocuments = async () => {
-      if (!tripId) {
-        setPageError("Trip information is unavailable.")
-        setLoading(false)
-        return
-      }
-
-      try {
-        const result = await getTripDocuments(tripId)
-
-        if (active) {
-          setDocuments(Array.isArray(result) ? result : [])
-          setPageError("")
-        }
-      } catch (error) {
-        if (active) {
-          setPageError(
-            getApiErrorMessage(error, "Unable to load travel documents.")
-          )
-        }
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-
-    fetchDocuments()
-
-    return () => {
-      active = false
-    }
-  }, [tripId])
+    return () => window.clearTimeout(timer)
+  }, [loadDocuments])
 
   const openUploadForm = () => {
     setForm({ ...EMPTY_FORM })
@@ -349,7 +322,7 @@ function TripDocuments() {
           </div>
 
           <div className="rounded-xl border border-[#dcebe6] bg-[#f0faf7] px-3 py-2 text-xs font-semibold text-[#087f82]">
-            PDF, JPG, PNG Â· Max 10 MB
+            PDF, JPG, PNG Ãƒâ€šÃ‚Â· Max 10 MB
           </div>
         </div>
 
@@ -498,7 +471,7 @@ function TripDocuments() {
 
                 {selectedFile && !formError && (
                   <p className="mt-2 text-xs text-[#71808d]">
-                    {selectedFile.name} Â· {formatFileSize(selectedFile.size)}
+                    {selectedFile.name} Ãƒâ€šÃ‚Â· {formatFileSize(selectedFile.size)}
                   </p>
                 )}
               </div>
