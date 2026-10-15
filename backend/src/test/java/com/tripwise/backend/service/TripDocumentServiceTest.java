@@ -251,6 +251,52 @@ class TripDocumentServiceTest {
 
         verifyNoInteractions(storageService);
     }
+    @Test
+    void uploadDocumentShouldCleanupStoredFileWhenDatabaseSaveFails() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "flight.pdf",
+                "application/pdf",
+                "%PDF-1.7 sample".getBytes()
+        );
+
+        when(tripRepository.findByIdAndUserEmail(1L, "user@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(storageService.store(file)).thenReturn("generated-file.pdf");
+        when(tripDocumentRepository.save(any(TripDocument.class)))
+                .thenThrow(new IllegalStateException("Database unavailable"));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> tripDocumentService.uploadDocument(
+                        1L, request, file, "user@example.com")
+        );
+
+        verify(storageService).store(file);
+        verify(storageService).delete("generated-file.pdf");
+    }
+
+    @Test
+    void deleteDocumentShouldNotDeleteRecordWhenStorageDeletionFails() {
+        TripDocument document = createDocument();
+
+        when(tripRepository.findByIdAndUserEmail(1L, "user@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(tripDocumentRepository.findByIdAndTripId(100L, 1L))
+                .thenReturn(Optional.of(document));
+
+        doThrow(new IllegalStateException("Storage unavailable"))
+                .when(storageService).delete("test-storage-key");
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> tripDocumentService.deleteDocument(
+                        1L, 100L, "user@example.com")
+        );
+
+        verify(storageService).delete("test-storage-key");
+        verify(tripDocumentRepository, never()).delete(any(TripDocument.class));
+    }
     private TripDocument createDocument() {
         return TripDocument.builder()
                 .id(100L)

@@ -11,6 +11,10 @@ import com.tripwise.backend.service.TripDocumentService;
 import com.tripwise.backend.security.JwtService;
 import com.tripwise.backend.security.CustomUserDetailsService;
 import org.junit.jupiter.api.Test;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -207,6 +211,119 @@ class TripDocumentControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldUploadDocument() throws Exception {
+        DocumentRequest request = createRequest(
+                "Flight Ticket",
+                "Return flight booking"
+        );
+
+        TripDocumentResponse response = createResponse();
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "flight.pdf",
+                "application/pdf",
+                "%PDF-1.7 sample".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        MockMultipartFile metadata = new MockMultipartFile(
+                "metadata",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+
+        when(tripDocumentService.uploadDocument(
+                eq(1L),
+                any(DocumentRequest.class),
+                any(org.springframework.web.multipart.MultipartFile.class),
+                eq("user@example.com")
+        )).thenReturn(response);
+
+        mockMvc.perform(multipart("/api/trips/1/document-metadata")
+                        .file(file)
+                        .file(metadata)
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value(100));
+
+        verify(tripDocumentService).uploadDocument(
+                eq(1L),
+                any(DocumentRequest.class),
+                any(org.springframework.web.multipart.MultipartFile.class),
+                eq("user@example.com")
+        );
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldRejectUploadWhenFilePartIsMissing() throws Exception {
+        DocumentRequest request = createRequest(
+                "Flight Ticket",
+                "Return flight booking"
+        );
+
+        MockMultipartFile metadata = new MockMultipartFile(
+                "metadata",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+
+        mockMvc.perform(multipart("/api/trips/1/document-metadata")
+                        .file(metadata)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com")
+    void shouldRejectUploadWhenCategoryIsInvalid() throws Exception {
+        String invalidMetadata = """
+                {
+                  "title": "Flight Ticket",
+                  "description": "Return flight booking",
+                  "category": "INVALID_CATEGORY"
+                }
+                """;
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "flight.pdf",
+                "application/pdf",
+                "%PDF-1.7 sample".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        MockMultipartFile metadata = new MockMultipartFile(
+                "metadata",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                invalidMetadata.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/api/trips/1/document-metadata")
+                        .file(file)
+                        .file(metadata)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+
+        verify(tripDocumentService, org.mockito.Mockito.never())
+                .uploadDocument(
+                        eq(1L),
+                        any(DocumentRequest.class),
+                        any(org.springframework.web.multipart.MultipartFile.class),
+                        eq("user@example.com")
+                );
+    }
+
+    @Test
+    void shouldRejectUnauthenticatedDocumentRequest() throws Exception {
+        mockMvc.perform(get("/api/trips/1/document-metadata"))
+                .andExpect(status().isUnauthorized());
+    }
     private DocumentRequest createRequest(
             String title,
             String description
