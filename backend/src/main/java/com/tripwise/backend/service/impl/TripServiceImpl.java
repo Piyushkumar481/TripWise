@@ -9,6 +9,12 @@ import com.tripwise.backend.exception.InvalidCredentialsException;
 import com.tripwise.backend.exception.InvalidTripDateException;
 import com.tripwise.backend.exception.TripNotFoundException;
 import com.tripwise.backend.repository.TripRepository;
+import com.tripwise.backend.repository.TripDocumentRepository;
+import com.tripwise.backend.entity.TripDocument;
+import com.tripwise.backend.service.interfaces.StorageService;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.interfaces.TripService;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +48,8 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
-
+    private final TripDocumentRepository tripDocumentRepository;
+    private final StorageService storageService;
     @Override
     public TripResponse createTrip(
             String email,
@@ -208,6 +215,7 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
+    @Transactional
     public void deleteTrip(
             String email,
             Long tripId) {
@@ -229,7 +237,39 @@ public class TripServiceImpl implements TripService {
                     return new TripNotFoundException("Trip not found");
                 });
 
+        List<String> storageKeys = tripDocumentRepository
+                .findByTripIdOrderByUploadedAtDesc(tripId)
+                .stream()
+                .map(TripDocument::getStorageKey)
+                .filter(key -> key != null && !key.startsWith("pending/"))
+                .toList();
+
         tripRepository.delete(trip);
+
+        Runnable cleanupFiles = () -> storageKeys.forEach(storageKey -> {
+            try {
+                storageService.delete(storageKey);
+            } catch (RuntimeException exception) {
+                logger.error(
+                        "Could not clean up stored document for deleted trip {}",
+                        tripId,
+                        exception
+                );
+            }
+        });
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            cleanupFiles.run();
+                        }
+                    }
+            );
+        } else {
+            cleanupFiles.run();
+        }
 
         logger.info(
                 "Trip deleted successfully with id: {}",
@@ -301,4 +341,5 @@ public class TripServiceImpl implements TripService {
                 .build();
     }
 }
+
 

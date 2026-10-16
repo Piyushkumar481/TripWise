@@ -5,6 +5,8 @@ import com.tripwise.backend.dto.TripResponse;
 import com.tripwise.backend.entity.Trip;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.repository.TripRepository;
+import com.tripwise.backend.repository.TripDocumentRepository;
+import com.tripwise.backend.service.interfaces.StorageService;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.impl.TripServiceImpl;
 
@@ -30,6 +32,12 @@ class TripServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TripDocumentRepository tripDocumentRepository;
+
+    @Mock
+    private StorageService storageService;
 
     @InjectMocks
     private TripServiceImpl tripService;
@@ -189,5 +197,6 @@ class TripServiceImplTest {
                 );
     }
 }
+
 
 

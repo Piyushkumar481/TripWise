@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+﻿import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   CalendarDays,
+  Edit3,
+  Trash2,
   CheckCircle2,
   Clock3,
   FileText,
@@ -36,11 +38,37 @@ import {
 } from "../utils/tripWorkspaceUtils"
 
 import { getApiErrorMessage } from "../utils/errorHandler"
+import { deleteTrip } from "../services/tripService"
+import ConfirmModal from "../components/ConfirmModal"
 
 function TripDetails() {
   const { trip } = useOutletContext()
   const navigate = useNavigate()
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
+
+  const handleDeleteTrip = async () => {
+    try {
+      setDeleteLoading(true)
+      setDeleteError("")
+
+      await deleteTrip(trip.id)
+
+      navigate("/trips", {
+        replace: true,
+        state: { message: "Trip deleted successfully." },
+      })
+    } catch (error) {
+      setDeleteError(
+        getApiErrorMessage(error, "Unable to delete this trip.")
+      )
+      setDeleteModalOpen(false)
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
   const status = getTripStatus(trip)
   const statusStyles = getTripStatusStyles(status)
 
@@ -406,11 +434,34 @@ function TripDetails() {
             </p>
           </div>
 
-          <span
-            className={`inline-flex w-fit items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyles.badge}`}
-          >
-            {statusStyles.label}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex w-fit items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyles.badge}`}
+            >
+              {statusStyles.label}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => navigate(`/trips/${trip.id}/edit`)}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#dfe5e1] bg-white px-3 py-2 text-sm font-semibold text-[#17233c] transition hover:border-[#087f82] hover:text-[#087f82]"
+            >
+              <Edit3 className="h-4 w-4" />
+              Edit Trip
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError("")
+                setDeleteModalOpen(true)
+              }}
+              className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Trip
+            </button>
+          </div>
         </div>
       </section>
 
@@ -646,6 +697,25 @@ function TripDetails() {
           }
         />
       </section>
+
+      {deleteError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {deleteError}
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete Trip"
+        message={`Are you sure you want to delete "${trip.title}"? This will permanently remove the trip and its associated planning data.`}
+        confirmText="Delete Trip"
+        onConfirm={handleDeleteTrip}
+        onCancel={() => setDeleteModalOpen(false)}
+        loading={deleteLoading}
+      />
     </div>
   )
 }
@@ -680,6 +750,7 @@ function OverviewStatCard({
 }
 
 export default TripDetails
+
 
 
 

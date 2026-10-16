@@ -322,7 +322,7 @@ function TripDocuments() {
           </div>
 
           <div className="rounded-xl border border-[#dcebe6] bg-[#f0faf7] px-3 py-2 text-xs font-semibold text-[#087f82]">
-            PDF, JPG, PNG Ãƒâ€šÃ‚Â· Max 10 MB
+            PDF, JPG, PNG · Max 10 MB
           </div>
         </div>
 
