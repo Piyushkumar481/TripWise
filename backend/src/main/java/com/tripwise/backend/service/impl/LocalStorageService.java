@@ -2,6 +2,7 @@ package com.tripwise.backend.service.impl;
 
 import com.tripwise.backend.exception.DocumentNotFoundException;
 import com.tripwise.backend.service.interfaces.StorageService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -17,6 +18,12 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
+@ConditionalOnProperty(
+        prefix = "tripwise.documents.storage",
+        name = "provider",
+        havingValue = "local",
+        matchIfMissing = true
+)
 public class LocalStorageService implements StorageService {
 
     private static final Pattern SAFE_FILENAME =

@@ -36,4 +36,8 @@ tripwise:
       - image/jpeg
       - image/png
     storage:
+      provider: ${TRIPWISE_STORAGE_PROVIDER:local}
       local-directory: ${TRIPWISE_DOCUMENT_STORAGE:./storage/documents}
+      azure:
+        connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+        container-name: ${AZURE_STORAGE_CONTAINER:tripwise-documents}
