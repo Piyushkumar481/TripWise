@@ -2,8 +2,12 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/tripwise}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: update
+
+jwt:
+  secret: ${JWT_SECRET:tripwise-local-development-secret-key-2026-change-this}
+  expiration: ${JWT_EXPIRATION:86400000}

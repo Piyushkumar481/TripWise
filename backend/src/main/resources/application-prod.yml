@@ -7,3 +7,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+tripwise:
+  documents:
+    storage:
+      provider: ${TRIPWISE_STORAGE_PROVIDER:azure}
