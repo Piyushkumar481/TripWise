@@ -196,7 +196,30 @@ class TripServiceImplTest {
                         "test@example.com"
                 );
     }
+    @Test
+    void shouldDeleteTripAndCleanUpStoredDocuments() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+
+        Trip trip = Trip.builder()
+                .id(10L)
+                .user(user)
+                .title("Test Trip")
+                .build();
+
+        com.tripwise.backend.entity.TripDocument document =
+                new com.tripwise.backend.entity.TripDocument();
+        document.setStorageKey("12345678-1234-1234-1234-123456789012.pdf");
+
+        when(tripRepository.findByIdAndUserEmail(10L, "test@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(tripDocumentRepository.findByTripIdOrderByUploadedAtDesc(10L))
+                .thenReturn(java.util.List.of(document));
+
+        tripService.deleteTrip("test@example.com", 10L);
+
+        verify(tripRepository).delete(trip);
+        verify(storageService).delete(document.getStorageKey());
+    }
 }
-
-
-
