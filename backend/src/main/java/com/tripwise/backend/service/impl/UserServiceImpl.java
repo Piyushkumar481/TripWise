@@ -30,13 +30,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse register(RegisterRequest request) {
 
-        log.info("Registering user with email: {}", request.getEmail());
+        log.info("Processing user registration request.");
 
         if (userRepository.existsByEmail(request.getEmail())) {
 
-            log.warn("Registration failed. Email already exists: {}", request.getEmail());
+            log.warn("Registration failed because the email is already registered.");
 
-            throw new ResourceAlreadyExistsException("Email already registered.");
+            throw new ResourceAlreadyExistsException("Unable to register with the provided details.");
         }
 
         User user = User.builder()

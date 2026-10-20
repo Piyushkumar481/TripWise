@@ -9,5 +9,5 @@ spring:
       ddl-auto: update
 
 jwt:
-  secret: ${JWT_SECRET:tripwise-local-development-secret-key-2026-change-this}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}

@@ -1,7 +1,9 @@
 package com.tripwise.backend.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 
@@ -12,7 +14,8 @@ public class DocumentStorageConfigurationValidator {
             Set.of("local", "azure");
 
     public DocumentStorageConfigurationValidator(
-            DocumentStorageProperties properties) {
+            DocumentStorageProperties properties,
+            Environment environment) {
 
         String provider = properties.getProvider();
 
@@ -23,6 +26,15 @@ public class DocumentStorageConfigurationValidator {
                     "Unsupported document storage provider: "
                             + provider
                             + ". Supported providers are: local, azure."
+            );
+        }
+
+        boolean productionActive = Arrays.stream(environment.getActiveProfiles())
+                .anyMatch("prod"::equalsIgnoreCase);
+
+        if (productionActive && !"azure".equalsIgnoreCase(provider)) {
+            throw new IllegalStateException(
+                    "Production requires Azure document storage."
             );
         }
     }
