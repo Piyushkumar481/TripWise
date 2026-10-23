@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -36,9 +37,14 @@ public class TripServiceImpl implements TripService {
             Set.of(
                     "title",
                     "destination",
+                    "destinationCity",
+                    "destinationCountry",
                     "startDate",
                     "endDate"
             );
+
+    private static final Map<String, String> SORT_FIELD_ALIASES =
+            Map.of("destination", "destinationCity");
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
@@ -104,7 +110,19 @@ public class TripServiceImpl implements TripService {
             LocalDate startDateFrom,
             LocalDate startDateTo) {
 
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+        String normalizedSortBy =
+                (sortBy == null || sortBy.isBlank())
+                        ? "startDate"
+                        : sortBy.trim();
+
+        String resolvedSortBy =
+                SORT_FIELD_ALIASES.getOrDefault(
+                        normalizedSortBy,
+                        normalizedSortBy
+                );
+
+        if (!ALLOWED_SORT_FIELDS.contains(normalizedSortBy)
+                && !ALLOWED_SORT_FIELDS.contains(resolvedSortBy)) {
             throw new IllegalArgumentException(
                     "Invalid sort field: " + sortBy
             );
@@ -136,7 +154,7 @@ public class TripServiceImpl implements TripService {
                 PageRequest.of(
                         page,
                         size,
-                        Sort.by(sortDirection, sortBy)
+                        Sort.by(sortDirection, resolvedSortBy)
                 );
 
         Page<Trip> trips =
@@ -267,10 +285,19 @@ public class TripServiceImpl implements TripService {
                 .orElseThrow(() ->
                         new InvalidCredentialsException("User not found"));
 
+        String normalizedCity = city == null ? "" : city.trim();
+
+        if (normalizedCity.isEmpty()) {
+            return tripRepository.findByUser(user)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
         return tripRepository
                 .findByUserAndDestinationCityContainingIgnoreCase(
                         user,
-                        city
+                        normalizedCity
                 )
                 .stream()
                 .map(this::mapToResponse)
@@ -280,6 +307,11 @@ public class TripServiceImpl implements TripService {
     private void validateDates(
             LocalDate startDate,
             LocalDate endDate) {
+
+        if (startDate == null || endDate == null) {
+            throw new InvalidTripDateException(
+                    "Trip start and end dates are required");
+        }
 
         if (endDate.isBefore(startDate)) {
             throw new InvalidTripDateException(
@@ -301,4 +333,3 @@ public class TripServiceImpl implements TripService {
                 .build();
     }
 }
-
