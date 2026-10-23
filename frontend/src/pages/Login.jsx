@@ -1,65 +1,55 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react"
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Globe2,
-  LockKeyhole,
-  Mail,
-  Plane,
-  Sparkles,
-} from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Plane } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+
 import { loginUser } from "../services/authService"
 import { getApiErrorMessage } from "../utils/errorHandler"
 import { useAuth } from "../context/useAuth"
 
+function Brand() {
+  return (
+    <Link to="/" className="inline-flex items-center gap-3" aria-label="TripWise home">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#129c9c] text-white shadow-lg shadow-teal-900/10">
+        <Plane size={21} strokeWidth={2.3} />
+      </span>
+      <span>
+        <span className="block text-xl font-extrabold tracking-tight text-[#17233c]">
+          Trip<span className="text-[#129c9c]">Wise</span>
+        </span>
+        <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.24em] text-[#86939d]">Travel differently</span>
+      </span>
+    </Link>
+  )
+}
+
 function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
-
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
+  const [formData, setFormData] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const errorRef = useRef(null)
 
   useEffect(() => {
-    if (error) {
-      errorRef.current?.focus()
-    }
+    if (error) errorRef.current?.focus()
   }, [error])
 
   const handleChange = (event) => {
     const { name, value } = event.target
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }))
+    setFormData((previous) => ({ ...previous, [name]: value }))
+    if (error) setError("")
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-
-    if (loading) {
-      return
-    }
-
+    if (loading) return
     setError("")
 
     if (!formData.email.trim()) {
       setError("Email is required.")
       return
     }
-
     if (!formData.password) {
       setError("Password is required.")
       return
@@ -67,287 +57,140 @@ function Login() {
 
     try {
       setLoading(true)
-
       const response = await loginUser({
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
       })
-
       login(response)
-
       navigate("/trips")
-    } catch (error) {
-      setError(
-        getApiErrorMessage(
-          error,
-          "Login failed. Please check your email and password."
-        )
-      )
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Login failed. Please check your email and password."))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#123b46]">
+    <main className="min-h-screen bg-[#f7f5ef] text-[#17233c]">
+      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-7 sm:py-5 lg:px-10">
+        <Brand />
+        <Link to="/" className="rounded-xl px-3 py-2 text-sm font-semibold text-[#667586] transition hover:bg-[#e5f6f2] hover:text-[#087f82]">
+          Back home
+        </Link>
+      </header>
 
-      <img
-        src="https://images.unsplash.com/photo-1761047726527-6f263d10e09d?auto=format&fit=crop&w=1600&q=70"
-        alt="Sailboats floating on clear turquoise ocean"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-r from-[#12313c]/75 via-[#254c55]/25 to-transparent" />
-
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_32%,rgba(255,205,157,0.28),transparent_27%)]" />
-
-      <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#09232d]/65 to-transparent" />
-
-      <div className="pointer-events-none absolute left-[52%] top-[20%] h-72 w-72 rounded-full bg-[#ffd3a8]/15 blur-2xl" />
-
-      <div className="pointer-events-none absolute right-[10%] bottom-[12%] h-80 w-80 rounded-full bg-[#c8e9e4]/10 blur-2xl" />
-
-      <div className="absolute left-6 top-6 z-30 sm:left-10 sm:top-8 lg:left-12">
-        <div className="flex items-center gap-3">
-
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/25 bg-white/10 shadow-2xl backdrop-blur-xl">
-            <Plane size={20} className="text-white" />
-          </div>
-
-          <div>
-            <p className="text-xl font-black tracking-tight text-white">
-              Trip<span className="text-[#ffd0ae]">Wise</span>
-            </p>
-
-            <p className="text-[9px] uppercase tracking-[0.3em] text-white/55">
-              travel differently
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 pb-6 sm:px-7 sm:pb-9 lg:grid-cols-[1fr_0.86fr] lg:gap-7 lg:px-10">
+        <div className="relative hidden min-h-[590px] overflow-hidden rounded-[28px] border border-[#dfe7df] bg-[#dff1ed] lg:block">
+          <img
+            src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1400&q=85"
+            alt="Serene mountain lake on a travel adventure"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#122d3e]/80 via-[#122d3e]/15 to-[#122d3e]/10" />
+          <div className="absolute inset-x-0 bottom-0 p-9 xl:p-12">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur">
+              <Plane size={14} /> Welcome back
+            </span>
+            <h1 className="max-w-lg font-serif text-4xl font-bold leading-tight text-white xl:text-5xl">
+              The journey is yours.
+              <span className="mt-1 block italic text-[#c5f0e8]">Make every moment count.</span>
+            </h1>
+            <p className="mt-4 max-w-md text-sm leading-6 text-white/80">
+              Your trips, plans and travel memories are waiting for you.
             </p>
           </div>
-
+          <div className="absolute right-7 top-7 rounded-2xl border border-white/40 bg-white/80 px-4 py-3 backdrop-blur">
+            <p className="font-serif text-base italic text-[#526c7c]">“Collect moments, not things.”</p>
+          </div>
         </div>
-      </div>
 
-      <section className="relative z-20 flex min-h-screen items-center px-5 py-24 sm:px-8 lg:w-[58%] lg:px-12 xl:w-[55%] xl:px-20">
-
-        <div className="w-full max-w-[470px]">
-
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/45 bg-[#fffaf7]/90 p-6 shadow-[0_35px_100px_rgba(5,25,35,0.38)] sm:p-9">
-
-            <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#ffc0a8]/25 blur-3xl" />
-
-            <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-[#c9c1f4]/25 blur-3xl" />
-
-            <div className="relative">
-
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#eadbd4] bg-white/80 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#a65d70]">
-                <Sparkles size={13} className="text-[#d9818e]" />
-                Your travel workspace
-              </div>
-
-              <p className="text-sm font-semibold text-[#b25e73]">
-                Welcome back
-              </p>
-
-              <h1 className="mt-2 text-4xl font-black tracking-[-0.045em] text-[#28222a] sm:text-5xl">
-                Sign in to
-                <span className="block bg-gradient-to-r from-[#bd5c72] via-[#d47c8c] to-[#8d74b6] bg-clip-text text-transparent">
-                  TripWise
-                </span>
-              </h1>
-
-              <p className="mt-4 text-sm leading-6 text-[#777079]">
-                Continue planning your next adventure.
-              </p>
-
-              <form
-                className="mt-8 space-y-5"
-                onSubmit={handleSubmit}
-              >
-
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-semibold text-[#514952]"
-                  >
-                    Email address
-                  </label>
-
-                  <div className="group relative">
-
-                    <Mail
-                      size={18}
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#a49aa1] transition group-focus-within:text-[#bd6277]"
-                    />
-
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="you@example.com"
-                      className="h-13 w-full rounded-2xl border border-[#e7dcd6] bg-white/80 pl-11 pr-4 text-sm text-[#302832] outline-none placeholder:text-[#aaa1a8] shadow-sm transition-all duration-300 hover:border-[#d8c9c2] focus:border-[#d78595] focus:bg-white focus:ring-4 focus:ring-[#f3a2ad]/15"
-                    />
-
-                  </div>
-                </div>
-
-                <div>
-
-                  <div className="mb-2 flex items-center justify-between">
-
-                    <label
-                      htmlFor="password"
-                      className="text-sm font-semibold text-[#514952]"
-                    >
-                      Password
-                    </label>
-
-                    <a
-                      href="#"
-                      className="text-xs font-bold text-[#ad5b72] transition hover:text-[#815f9d]"
-                    >
-                      Forgot password?
-                    </a>
-
-                  </div>
-
-                  <div className="group relative">
-
-                    <LockKeyhole
-                      size={18}
-                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#a49aa1] transition group-focus-within:text-[#bd6277]"
-                    />
-
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Enter your password"
-                      className="h-13 w-full rounded-2xl border border-[#e7dcd6] bg-white/80 pl-11 pr-12 text-sm text-[#302832] outline-none placeholder:text-[#aaa1a8] shadow-sm transition-all duration-300 hover:border-[#d8c9c2] focus:border-[#d78595] focus:bg-white focus:ring-4 focus:ring-[#f3a2ad]/15"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-2 text-[#9c929b] transition hover:bg-[#f8ecec] hover:text-[#ad5b72]"
-                      aria-label={
-                        showPassword
-                          ? "Hide password"
-                          : "Show password"
-                      }
-                    >
-                      {showPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-
-                  <label className="flex cursor-pointer items-center gap-3 text-sm text-[#756c75]">
-
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-[#d9ccc6] accent-[#cf7083]"
-                    />
-
-                    Remember me
-
-                  </label>
-
-                  <span className="text-xs text-[#a29aa0]">
-                    Secure access
-                  </span>
-
-                </div>
-
-                {error && (
-                  <div
-                    ref={errorRef}
-                    role="alert"
-                    aria-live="assertive"
-                    tabIndex={-1}
-                    className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-                  >
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="group relative flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#f08d88] via-[#df7891] to-[#a985df] text-sm font-bold text-white shadow-[0_16px_35px_rgba(205,116,137,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_45px_rgba(176,112,150,0.35)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-
-                  <span className="relative">
-                    {loading ? "Signing in..." : "Continue your journey"}
-                  </span>
-
-                  <ArrowRight
-                    size={17}
-                    className="relative transition-transform duration-300 group-hover:translate-x-1"
-                  />
-
-                </button>
-
-              </form>
-
-              <div className="my-7 flex items-center gap-3">
-
-                <div className="h-px flex-1 bg-[#e9dfda]" />
-
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#aaa0a7]">
-                  TripWise
-                </span>
-
-                <div className="h-px flex-1 bg-[#e9dfda]" />
-
-              </div>
-
-              <p className="text-center text-sm text-[#827881]">
-                Don't have an account?{" "}
-
-                <a
-                  href="/register"
-                  className="font-bold text-[#a65c72] transition hover:text-[#805e9e]"
-                >
-                  Create one
-                </a>
-
-              </p>
-
+        <div className="flex min-w-0 items-center justify-center rounded-[28px] border border-[#e3e7df] bg-white px-5 py-8 shadow-[0_24px_75px_-50px_rgba(23,35,60,0.3)] sm:px-9 sm:py-10 lg:px-10 xl:px-14">
+          <div className="w-full max-w-[440px]">
+            <div className="mb-7 flex items-center gap-2 lg:hidden">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e5f6f2] text-[#129c9c]">
+                <Plane size={19} />
+              </span>
+              <span className="font-serif text-sm italic text-[#637888]">Your next chapter awaits.</span>
             </div>
+
+            <p className="text-xs font-extrabold uppercase tracking-[0.19em] text-[#129c9c]">Your travel space</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#17233c] sm:text-4xl">Welcome back</h2>
+            <p className="mt-3 text-sm leading-6 text-[#788793]">Sign in to pick up where your next adventure begins.</p>
+
+            {error && (
+              <div ref={errorRef} role="alert" aria-live="assertive" tabIndex={-1} className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email" className="mb-2 block text-sm font-semibold text-[#4e6070]">Email address</label>
+                <div className="relative">
+                  <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#93a2ab]" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    className="h-12 w-full rounded-xl border border-[#e0e7e2] bg-[#fffefa] pl-11 pr-4 text-sm text-[#17233c] outline-none transition placeholder:text-[#a2adb3] hover:border-[#b8dcd5] focus:border-[#129c9c] focus:ring-4 focus:ring-[#129c9c]/10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="mb-2 block text-sm font-semibold text-[#4e6070]">Password</label>
+                <div className="relative">
+                  <LockKeyhole size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#93a2ab]" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className="h-12 w-full rounded-xl border border-[#e0e7e2] bg-[#fffefa] pl-11 pr-12 text-sm text-[#17233c] outline-none transition placeholder:text-[#a2adb3] hover:border-[#b8dcd5] focus:border-[#129c9c] focus:ring-4 focus:ring-[#129c9c]/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-[#82939f] transition hover:bg-[#eaf6f4] hover:text-[#087f82]"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#129c9c] px-5 text-sm font-bold text-white shadow-lg shadow-teal-900/10 transition hover:-translate-y-0.5 hover:bg-[#0b8588] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Signing in..." : "Sign in to TripWise"}
+                {!loading && <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" />}
+              </button>
+            </form>
+
+            <p className="mt-7 text-center text-sm text-[#7f8d97]">
+              New to TripWise?{" "}
+              <Link to="/register" className="font-bold text-[#078a8d] hover:text-[#075e66]">Create an account</Link>
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="absolute bottom-7 right-8 z-20 hidden text-right text-white/70 lg:block xl:right-12">
-
-        <p className="text-xs uppercase tracking-[0.25em]">
-          Explore ╖ Plan ╖ Remember
-        </p>
-
-        <div className="mt-2 flex items-center justify-end gap-2 text-xs text-white/50">
-          <Globe2 size={13} />
-          Your next story awaits
-        </div>
-
-      </div>
-
+      <footer className="px-4 pb-5 text-center text-xs text-[#92a0a5]">
+        A little planning. A lot more wonder.
+      </footer>
     </main>
   )
 }
 
 export default Login
-
-
-
