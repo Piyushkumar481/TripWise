@@ -35,7 +35,7 @@ function Dashboard() {
           sortDirection: "asc",
         })
 
-        setTrips(response?.content || [])
+        setTrips(response?.data?.content ?? response?.content ?? [])
       } catch (error) {
         console.error("Failed to load dashboard trips:", error)
 
