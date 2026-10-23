@@ -3,19 +3,16 @@ package com.tripwise.backend.service.impl;
 import com.tripwise.backend.dto.TripRequest;
 import com.tripwise.backend.dto.TripResponse;
 import com.tripwise.backend.entity.Trip;
+import com.tripwise.backend.entity.TripDocument;
 import com.tripwise.backend.entity.TripStatus;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.exception.InvalidCredentialsException;
 import com.tripwise.backend.exception.InvalidTripDateException;
 import com.tripwise.backend.exception.TripNotFoundException;
-import com.tripwise.backend.repository.TripRepository;
 import com.tripwise.backend.repository.TripDocumentRepository;
-import com.tripwise.backend.entity.TripDocument;
-import com.tripwise.backend.service.interfaces.StorageService;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+import com.tripwise.backend.repository.TripRepository;
 import com.tripwise.backend.repository.UserRepository;
+import com.tripwise.backend.service.interfaces.StorageService;
 import com.tripwise.backend.service.interfaces.TripService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -25,10 +22,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -42,14 +43,20 @@ public class TripServiceImpl implements TripService {
             Set.of(
                     "title",
                     "destination",
+                    "destinationCity",
+                    "destinationCountry",
                     "startDate",
                     "endDate"
             );
+
+    private static final Map<String, String> SORT_FIELD_ALIASES =
+            Map.of("destination", "destinationCity");
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
     private final TripDocumentRepository tripDocumentRepository;
     private final StorageService storageService;
+
     @Override
     public TripResponse createTrip(
             String email,
@@ -111,15 +118,27 @@ public class TripServiceImpl implements TripService {
             LocalDate startDateFrom,
             LocalDate startDateTo) {
 
-        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+        String normalizedSortBy =
+                (sortBy == null || sortBy.isBlank())
+                        ? "startDate"
+                        : sortBy.trim();
+
+        String resolvedSortBy =
+                SORT_FIELD_ALIASES.getOrDefault(
+                        normalizedSortBy,
+                        normalizedSortBy
+                );
+
+        if (!ALLOWED_SORT_FIELDS.contains(normalizedSortBy)
+                && !ALLOWED_SORT_FIELDS.contains(resolvedSortBy)) {
             throw new IllegalArgumentException(
                     "Invalid sort field: " + sortBy
             );
         }
 
-        if (!direction.equalsIgnoreCase("asc")
-                && !direction.equalsIgnoreCase("desc")) {
-
+        if (direction == null
+                || (!direction.equalsIgnoreCase("asc")
+                && !direction.equalsIgnoreCase("desc"))) {
             throw new IllegalArgumentException(
                     "Direction must be 'asc' or 'desc'"
             );
@@ -128,7 +147,6 @@ public class TripServiceImpl implements TripService {
         if (startDateFrom != null
                 && startDateTo != null
                 && startDateFrom.isAfter(startDateTo)) {
-
             throw new IllegalArgumentException(
                     "startDateFrom cannot be after startDateTo"
             );
@@ -143,7 +161,7 @@ public class TripServiceImpl implements TripService {
                 PageRequest.of(
                         page,
                         size,
-                        Sort.by(sortDirection, sortBy)
+                        Sort.by(sortDirection, resolvedSortBy)
                 );
 
         Page<Trip> trips =
@@ -307,10 +325,19 @@ public class TripServiceImpl implements TripService {
                 .orElseThrow(() ->
                         new InvalidCredentialsException("User not found"));
 
+        String normalizedCity = city == null ? "" : city.trim();
+
+        if (normalizedCity.isEmpty()) {
+            return tripRepository.findByUser(user)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
         return tripRepository
                 .findByUserAndDestinationCityContainingIgnoreCase(
                         user,
-                        city
+                        normalizedCity
                 )
                 .stream()
                 .map(this::mapToResponse)
@@ -320,6 +347,11 @@ public class TripServiceImpl implements TripService {
     private void validateDates(
             LocalDate startDate,
             LocalDate endDate) {
+
+        if (startDate == null || endDate == null) {
+            throw new InvalidTripDateException(
+                    "Trip start and end dates are required");
+        }
 
         if (endDate.isBefore(startDate)) {
             throw new InvalidTripDateException(
@@ -341,5 +373,3 @@ public class TripServiceImpl implements TripService {
                 .build();
     }
 }
-
-
