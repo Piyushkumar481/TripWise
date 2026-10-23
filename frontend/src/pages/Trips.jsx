@@ -120,7 +120,7 @@ function Trips() {
       return "Not set"
     }
 
-    return `?${Number(budget).toLocaleString("en-IN")}`
+    return `\u20B9${Number(budget).toLocaleString("en-IN")}`
   }
 
 

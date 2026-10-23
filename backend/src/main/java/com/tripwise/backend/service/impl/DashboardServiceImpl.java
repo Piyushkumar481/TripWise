@@ -3,7 +3,6 @@ package com.tripwise.backend.service.impl;
 import com.tripwise.backend.dto.DashboardResponse;
 import com.tripwise.backend.dto.RecentTripResponse;
 import com.tripwise.backend.entity.Expense;
-import com.tripwise.backend.entity.ExpenseCategory;
 import com.tripwise.backend.entity.Trip;
 import com.tripwise.backend.entity.TripStatus;
 import com.tripwise.backend.entity.User;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +44,7 @@ public class DashboardServiceImpl
                 trips.stream()
                         .filter(trip ->
                                 trip.getStartDate()
-                                        .isAfter(
-                                                LocalDate.now()
-                                        )
+                                        .isAfter(LocalDate.now())
                                 &&
                                 trip.getStatus()
                                         != TripStatus.COMPLETED
@@ -77,9 +73,15 @@ public class DashboardServiceImpl
                         );
 
         List<Expense> expenses =
-                trips.isEmpty()
-                        ? List.of()
-                        : expenseRepository.findByTripIn(trips);
+                trips.stream()
+                        .flatMap(trip ->
+                                expenseRepository
+                                        .findByTripIdOrderByDateAsc(
+                                                trip.getId()
+                                        )
+                                        .stream()
+                        )
+                        .toList();
 
         BigDecimal totalExpenses =
                 expenses.stream()
@@ -138,28 +140,16 @@ public class DashboardServiceImpl
     calculateExpenseBreakdown(
             List<Expense> expenses) {
 
-        Map<ExpenseCategory, BigDecimal> totals =
-                new EnumMap<>(ExpenseCategory.class);
+        Map<String, BigDecimal> result =
+                new LinkedHashMap<>();
 
         for (Expense expense : expenses) {
-
-            totals.merge(
+            result.merge(
                     expense.getCategory(),
                     expense.getAmount(),
                     BigDecimal::add
             );
         }
-
-        Map<String, BigDecimal> result =
-                new LinkedHashMap<>();
-
-        totals.forEach(
-                (category, amount) ->
-                        result.put(
-                                category.name(),
-                                amount
-                        )
-        );
 
         return result;
     }

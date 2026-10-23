@@ -5,6 +5,8 @@ import com.tripwise.backend.dto.TripResponse;
 import com.tripwise.backend.entity.Trip;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.repository.TripRepository;
+import com.tripwise.backend.repository.TripDocumentRepository;
+import com.tripwise.backend.service.interfaces.StorageService;
 import com.tripwise.backend.repository.UserRepository;
 import com.tripwise.backend.service.impl.TripServiceImpl;
 
@@ -30,6 +32,12 @@ class TripServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TripDocumentRepository tripDocumentRepository;
+
+    @Mock
+    private StorageService storageService;
 
     @InjectMocks
     private TripServiceImpl tripService;
@@ -188,6 +196,30 @@ class TripServiceImplTest {
                         "test@example.com"
                 );
     }
+    @Test
+    void shouldDeleteTripAndCleanUpStoredDocuments() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+
+        Trip trip = Trip.builder()
+                .id(10L)
+                .user(user)
+                .title("Test Trip")
+                .build();
+
+        com.tripwise.backend.entity.TripDocument document =
+                new com.tripwise.backend.entity.TripDocument();
+        document.setStorageKey("12345678-1234-1234-1234-123456789012.pdf");
+
+        when(tripRepository.findByIdAndUserEmail(10L, "test@example.com"))
+                .thenReturn(Optional.of(trip));
+        when(tripDocumentRepository.findByTripIdOrderByUploadedAtDesc(10L))
+                .thenReturn(java.util.List.of(document));
+
+        tripService.deleteTrip("test@example.com", 10L);
+
+        verify(tripRepository).delete(trip);
+        verify(storageService).delete(document.getStorageKey());
+    }
 }
-
-

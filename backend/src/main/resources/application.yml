@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
   application:
     name: tripwise
 
@@ -17,9 +21,23 @@ server:
   port: 8080
 
 jwt:
-  secret: tripwise-local-development-secret-key-2026-change-this
-  expiration: 86400000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 logging:
   level:
     root: INFO
+
+tripwise:
+  documents:
+    max-file-size-bytes: 10485760
+    allowed-content-types:
+      - application/pdf
+      - image/jpeg
+      - image/png
+    storage:
+      provider: ${TRIPWISE_STORAGE_PROVIDER:local}
+      local-directory: ${TRIPWISE_DOCUMENT_STORAGE:./storage/documents}
+      azure:
+        connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+        container-name: ${AZURE_STORAGE_CONTAINER:tripwise-documents}

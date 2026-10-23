@@ -1,5 +1,6 @@
 package com.tripwise.backend.controller;
 
+import com.tripwise.backend.support.PostgresIntegrationTestBase;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class HealthControllerTest {
+class HealthControllerTest extends PostgresIntegrationTestBase {
 
     @Autowired
     private MockMvc mockMvc;

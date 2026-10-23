@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,10 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-
-        String path = request.getServletPath();
-
-        return path.startsWith("/api/auth/");
+        return request.getServletPath().startsWith("/api/auth/");
     }
 
     @Override
@@ -37,56 +35,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authorizationHeader =
-                request.getHeader("Authorization");
+        final String authorizationHeader = request.getHeader("Authorization");
 
-        if (authorizationHeader == null ||
-                !authorizationHeader.startsWith("Bearer ")) {
-
+        if (authorizationHeader == null
+                || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String jwt = authorizationHeader.substring(7);
 
-        String email;
-
         try {
+            String email = jwtService.extractEmail(jwt);
 
-            email = jwtService.extractEmail(jwt);
+            if (email != null
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        } catch (Exception ex) {
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
 
-            log.warn(
-                    "JWT authentication failed: {}",
-                    ex.getMessage()
-            );
+                if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
 
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (email != null &&
-                SecurityContextHolder.getContext()
-                        .getAuthentication() == null) {
-
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(email);
-
-            if (jwtService.isTokenValid(
-                    jwt,
-                    userDetails.getUsername())) {
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
+                }
             }
+        } catch (UsernameNotFoundException ex) {
+            log.warn("JWT authentication failed: account not found");
+            SecurityContextHolder.clearContext();
+        } catch (Exception ex) {
+            log.warn("JWT authentication failed: invalid or expired token");
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

@@ -2,7 +2,6 @@ package com.tripwise.backend.service;
 
 import com.tripwise.backend.dto.DashboardResponse;
 import com.tripwise.backend.entity.Expense;
-import com.tripwise.backend.entity.ExpenseCategory;
 import com.tripwise.backend.entity.Trip;
 import com.tripwise.backend.entity.TripStatus;
 import com.tripwise.backend.entity.User;
@@ -76,29 +75,32 @@ class DashboardServiceImplTest {
                 .status(TripStatus.PLANNED)
                 .build();
 
-        Expense food =
-                Expense.builder()
-                        .id(1L)
-                        .trip(trip1)
-                        .category(ExpenseCategory.FOOD)
-                        .amount(BigDecimal.valueOf(5000))
-                        .build();
+        Expense food = Expense.builder()
+                .id(1L)
+                .trip(trip1)
+                .title("Food")
+                .amount(BigDecimal.valueOf(5000))
+                .date(LocalDate.now().plusDays(11))
+                .category("FOOD")
+                .build();
 
-        Expense hotel =
-                Expense.builder()
-                        .id(2L)
-                        .trip(trip1)
-                        .category(ExpenseCategory.HOTEL)
-                        .amount(BigDecimal.valueOf(10000))
-                        .build();
+        Expense hotel = Expense.builder()
+                .id(2L)
+                .trip(trip1)
+                .title("Hotel")
+                .amount(BigDecimal.valueOf(10000))
+                .date(LocalDate.now().plusDays(12))
+                .category("HOTEL")
+                .build();
 
-        Expense transport =
-                Expense.builder()
-                        .id(3L)
-                        .trip(trip2)
-                        .category(ExpenseCategory.TRANSPORT)
-                        .amount(BigDecimal.valueOf(8000))
-                        .build();
+        Expense transport = Expense.builder()
+                .id(3L)
+                .trip(trip2)
+                .title("Transport")
+                .amount(BigDecimal.valueOf(8000))
+                .date(LocalDate.now().plusDays(21))
+                .category("TRANSPORT")
+                .build();
 
         when(userRepository.findByEmail(
                 "test@example.com"
@@ -110,14 +112,16 @@ class DashboardServiceImplTest {
                 List.of(trip1, trip2)
         );
 
-        when(expenseRepository.findByTripIn(
-                List.of(trip1, trip2)
+        when(expenseRepository.findByTripIdOrderByDateAsc(
+                1L
         )).thenReturn(
-                List.of(
-                        food,
-                        hotel,
-                        transport
-                )
+                List.of(food, hotel)
+        );
+
+        when(expenseRepository.findByTripIdOrderByDateAsc(
+                2L
+        )).thenReturn(
+                List.of(transport)
         );
 
         when(tripRepository.findTop5ByUserOrderByCreatedAtDesc(
@@ -193,8 +197,9 @@ class DashboardServiceImplTest {
                 .findByUser(user);
 
         verify(expenseRepository)
-                .findByTripIn(
-                        List.of(trip1, trip2)
-                );
+                .findByTripIdOrderByDateAsc(1L);
+
+        verify(expenseRepository)
+                .findByTripIdOrderByDateAsc(2L);
     }
 }

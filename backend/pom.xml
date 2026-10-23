@@ -26,6 +26,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.32.0</version>
+        </dependency>
 
         <!-- Spring Boot -->
         <dependency>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, RefreshCw } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import DashboardHero from "../components/DashboardHero"
@@ -7,10 +7,12 @@ import DashboardSection from "../components/DashboardSection"
 import StatCard from "../components/StatCard"
 import UpcomingTrips from "../components/UpcomingTrips"
 import TravelInspiration from "../components/TravelInspiration"
+import TripDistribution from "../components/dashboard/TripDistribution"
+import DashboardInsights from "../components/dashboard/DashboardInsights"
 
 import { getTrips } from "../services/tripService"
 import { getApiErrorMessage } from "../utils/errorHandler"
-import { getTripStatus } from "../utils/tripUtils"
+import { calculateDashboardAnalytics, formatAnalyticsCurrency } from "../utils/dashboardAnalytics"
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -18,6 +20,7 @@ function Dashboard() {
   const [trips, setTrips] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -32,7 +35,7 @@ function Dashboard() {
           sortDirection: "asc",
         })
 
-        setTrips(response?.data?.content || [])
+        setTrips(response?.content || [])
       } catch (error) {
         console.error("Failed to load dashboard trips:", error)
 
@@ -48,56 +51,47 @@ function Dashboard() {
     }
 
     fetchTrips()
-  }, [])
+  }, [retryCount])
 
-  const dashboardStats = useMemo(() => {
-    const tripsWithStatus = trips.map((trip) => ({
-      trip,
-      status: getTripStatus(trip),
-    }))
+  const analytics = useMemo(
+    () => calculateDashboardAnalytics(trips),
+    [trips]
+  )
 
-    const upcomingTrips = tripsWithStatus
-      .filter(({ status }) => status === "UPCOMING")
-      .map(({ trip }) => trip)
-
-    const activeTrips = tripsWithStatus.filter(
-      ({ status }) => status === "ACTIVE"
-    )
-
-    const completedTrips = tripsWithStatus.filter(
-      ({ status }) => status === "COMPLETED"
-    )
-
-    const totalBudget = trips.reduce((total, trip) => {
-      return total + Number(trip.budget || 0)
-    }, 0)
-
-    return {
-      totalTrips: trips.length,
-      upcomingTrips: upcomingTrips.length,
-      activeTrips: activeTrips.length,
-      completedTrips: completedTrips.length,
-      totalBudget,
-      upcomingTripList: upcomingTrips.slice(0, 3),
-    }
-  }, [trips])
+  const dashboardStats = useMemo(() => ({
+    totalTrips: analytics.totalTrips,
+    upcomingTrips: analytics.upcomingTrips.length,
+    activeTrips: analytics.activeTrips.length,
+    completedTrips: analytics.completedTrips.length,
+    totalBudget: analytics.totalBudget,
+    upcomingTripList: analytics.upcomingTrips.slice(0, 3),
+  }), [analytics])
 
   const formatBudget = (amount) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount)
+    return formatAnalyticsCurrency(amount)
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-8">
+    <div className="mx-auto w-full min-w-0 max-w-[1500px] space-y-6 px-4 sm:space-y-8 sm:px-6 lg:px-8">
 
       <DashboardHero />
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-          {error}
+        <div
+          role="alert"
+          className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="min-w-0 break-words font-medium">{error}</p>
+
+          <button
+            type="button"
+            onClick={() => setRetryCount((count) => count + 1)}
+            disabled={loading}
+            className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-red-200 bg-white px-3 py-2 font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto"
+          >
+            <RefreshCw size={15} aria-hidden="true" />
+            Try again
+          </button>
         </div>
       )}
 
@@ -120,14 +114,14 @@ function Dashboard() {
           <StatCard
             type="trips"
             label="Total Trips"
-            value={loading ? "Ã¢â‚¬â€" : dashboardStats.totalTrips}
+            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.totalTrips}
             description="Journeys planned"
           />
 
           <StatCard
             type="countries"
             label="Upcoming Trips"
-            value={loading ? "Ã¢â‚¬â€" : dashboardStats.upcomingTrips}
+            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.upcomingTrips}
             description="Future journeys"
           />
 
@@ -136,7 +130,7 @@ function Dashboard() {
             label="Total Budget"
             value={
               loading
-                ? "Ã¢â‚¬â€"
+                ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
                 : formatBudget(dashboardStats.totalBudget)
             }
             description="Across your trips"
@@ -145,7 +139,7 @@ function Dashboard() {
           <StatCard
             type="expenses"
             label="Active Trips"
-            value={loading ? "Ã¢â‚¬â€" : dashboardStats.activeTrips}
+            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.activeTrips}
             description="Trips happening now"
           />
 
@@ -153,6 +147,19 @@ function Dashboard() {
 
       </section>
 
+      <div className="space-y-8">
+        <DashboardInsights
+          analytics={analytics}
+          loading={loading}
+          onOpenTrip={(trip) => navigate(`/trips/${trip.id}`)}
+          onViewTrips={() => navigate("/trips")}
+        />
+
+        <TripDistribution
+          distribution={analytics.distribution}
+          loading={loading}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.65fr_0.85fr]">
 
         <DashboardSection

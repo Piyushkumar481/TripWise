@@ -1,6 +1,5 @@
 package com.tripwise.backend.dto;
 
-import com.tripwise.backend.entity.ExpenseCategory;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,11 +12,17 @@ public class ExpenseResponse {
 
     private Long id;
 
-    private ExpenseCategory category;
+    private Long tripId;
+
+    private String title;
 
     private BigDecimal amount;
 
-    private LocalDate expenseDate;
+    private LocalDate date;
 
-    private String description;
+    private String category;
+
+    private String paymentMethod;
+
+    private String notes;
 }

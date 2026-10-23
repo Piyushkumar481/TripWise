@@ -22,3 +22,8 @@ Thumbs.db
 
 # Uploads
 uploads/
+
+# Local TripWise verification artifacts
+/backups/
+/docker-test-email.txt
+/docker-test-password.txt
