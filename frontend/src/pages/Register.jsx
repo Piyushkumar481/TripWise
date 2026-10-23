@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import {
   ArrowRight,
   CalendarDays,
-  Check,
   Compass,
   Eye,
   EyeOff,
@@ -11,8 +10,6 @@ import {
   MapPin,
   Phone,
   Plane,
-  Sparkles,
-  User,
   UserRound,
 } from "lucide-react"
 import { Link } from "react-router-dom"
