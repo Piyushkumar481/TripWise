@@ -327,7 +327,14 @@ function TripNotes() {
       title="Trip Notes"
       description="Keep important information, reminders, addresses, and travel details in one place."
       actionLabel="New note"
-      onAction={openCreateForm}
+      onAction={() => {
+  openCreateForm()
+  window.setTimeout(() => {
+    const form = document.getElementById("trip-note-form")
+    form?.scrollIntoView({ behavior: "smooth", block: "center" })
+    form?.querySelector("input:not([type='hidden']), textarea, select")?.focus({ preventScroll: true })
+  }, 150)
+}}
     >
       <div className="space-y-6">
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -382,7 +389,7 @@ function TripNotes() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form id="trip-note-form" onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label
                   htmlFor="note-title"
@@ -626,7 +633,14 @@ function TripNotes() {
             {notes.length === 0 ? (
               <button
                 type="button"
-                onClick={openCreateForm}
+                onAction={() => {
+  openCreateForm()
+  window.setTimeout(() => {
+    const form = document.getElementById("trip-note-form")
+    form?.scrollIntoView({ behavior: "smooth", block: "center" })
+    form?.querySelector("input:not([type='hidden']), textarea, select")?.focus({ preventScroll: true })
+  }, 150)
+}}
                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#087f82] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#076f72]"
               >
                 <Plus size={17} />

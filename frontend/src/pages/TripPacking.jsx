@@ -328,7 +328,14 @@ function TripPacking() {
       title="Packing list"
       description={`Organize your essentials${trip?.title ? ` for ${trip.title}` : ""}, check off packed items, and get ready for your trip.`}
       actionLabel="Add item"
-      onAction={openCreateForm}
+      onAction={() => {
+  openCreateForm()
+  window.setTimeout(() => {
+    const form = document.getElementById("trip-packing-form")
+    form?.scrollIntoView({ behavior: "smooth", block: "center" })
+    form?.querySelector("input:not([type='hidden']), textarea, select")?.focus({ preventScroll: true })
+  }, 150)
+}}
     >
       <div className="space-y-6">
         <section className="rounded-3xl border border-[#dcebe8] bg-gradient-to-br from-white via-white to-[#eaf8f5] p-5 shadow-sm sm:p-7">
@@ -407,7 +414,7 @@ function TripPacking() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form id="trip-packing-form" onSubmit={handleSubmit} className="mt-5 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField label="Item name" required>
                   <input
@@ -631,7 +638,14 @@ function TripPacking() {
                   </p>
                   <button
                     type="button"
-                    onClick={openCreateForm}
+                    onAction={() => {
+  openCreateForm()
+  window.setTimeout(() => {
+    const form = document.getElementById("trip-packing-form")
+    form?.scrollIntoView({ behavior: "smooth", block: "center" })
+    form?.querySelector("input:not([type='hidden']), textarea, select")?.focus({ preventScroll: true })
+  }, 150)
+}}
                     className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#087f82] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#076f72]"
                   >
                     <Plus className="h-4 w-4" />

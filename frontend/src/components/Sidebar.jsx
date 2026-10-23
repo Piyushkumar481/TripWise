@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react"
 
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/useAuth"
 
 const navigationItems = [
@@ -28,32 +28,38 @@ const navigationItems = [
   {
     label: "Itinerary",
     icon: CalendarDays,
-    path: "/itinerary",
+    section: "itinerary",
   },
   {
     label: "Expenses",
     icon: Wallet,
-    path: "/expenses",
+    section: "expenses",
   },
   {
     label: "Documents",
     icon: FolderOpen,
-    path: "/documents",
+    section: "documents",
   },
   {
     label: "Packing",
     icon: CheckSquare,
-    path: "/packing",
+    section: "packing",
   },
   {
     label: "Notes",
     icon: FileText,
-    path: "/notes",
+    section: "notes",
   },
 ]
 
 function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const currentTripMatch = location.pathname.match(/^\/trips\/([^/]+)(?:\/|$)/)
+  const currentTripId =
+    currentTripMatch?.[1] && currentTripMatch[1] !== "new"
+      ? currentTripMatch[1]
+      : undefined
   const { user, logout } = useAuth()
 
   const handleLogout = () => {
@@ -126,11 +132,14 @@ function Sidebar({ isOpen, onClose }) {
 
             {navigationItems.map((item) => {
               const Icon = item.icon
+              const destination = item.section
+                ? (currentTripId ? `/trips/${currentTripId}/${item.section}` : "/trips")
+                : item.path
 
               return (
                 <NavLink
                   key={item.label}
-                  to={item.path}
+                  to={destination}
                   onClick={onClose}
                   className={({ isActive }) =>
                     `
