@@ -5,6 +5,15 @@ spring:
       max-request-size: 12MB
   application:
     name: tripwise
+  ai:
+    model:
+      chat: google-genai
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          model: gemini-3.8-flash
+          temperature: 0.7
 
   profiles:
     active: dev
