@@ -9,6 +9,7 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
+import AIItineraryHistory from "./pages/AIItineraryHistory"
 import CreateTrip from "./pages/CreateTrip"
 import TripDetails from "./pages/TripDetails"
 import TripWorkspaceLayout from "./layouts/TripWorkspaceLayout"
@@ -57,6 +58,10 @@ function App() {
             <Route
               path="/trips"
               element={<Trips />}
+            />
+            <Route
+              path="/ai/itinerary/history"
+              element={<AIItineraryHistory />}
             />
 
             <Route
