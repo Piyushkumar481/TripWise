@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -212,6 +213,28 @@ public class GlobalExceptionHandler {
                 request
         );
     }
+
+
+    @ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<ErrorResponse> handleResponseStatusException(
+        ResponseStatusException exception,
+        HttpServletRequest request) {
+
+    HttpStatus status = HttpStatus.valueOf(
+            exception.getStatusCode().value()
+    );
+
+    String message = exception.getReason() != null
+            ? exception.getReason()
+            : status.getReasonPhrase();
+
+    return buildResponse(
+            status,
+            status.getReasonPhrase(),
+            message,
+            request
+    );
+}
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(

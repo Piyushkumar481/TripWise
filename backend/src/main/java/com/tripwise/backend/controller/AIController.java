@@ -9,11 +9,10 @@ import com.tripwise.backend.ai.service.AIItineraryPersistenceService;
 import jakarta.validation.Valid;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -61,12 +60,16 @@ public class AIController {
     }
 
     @GetMapping("/itinerary/history")
-    public ResponseEntity<List<AIItineraryHistoryResponse>> getHistory(
+    public ResponseEntity<Page<AIItineraryHistoryResponse>> getHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
 
-        List<AIItineraryHistoryResponse> history =
+        Page<AIItineraryHistoryResponse> history =
                 persistenceService.getUserItineraries(
-                        authentication.getName()
+                        authentication.getName(),
+                        page,
+                        size
                 );
 
         return ResponseEntity.ok(history);
@@ -84,5 +87,32 @@ public class AIController {
                 );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/itinerary/history/{id}/regenerate")
+    public ResponseEntity<AIItineraryHistoryResponse> regenerateItinerary(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        AIItineraryHistoryResponse response =
+                persistenceService.regenerateItinerary(
+                        id,
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/itinerary/history/{id}")
+    public ResponseEntity<Void> deleteItinerary(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        persistenceService.deleteItinerary(
+                id,
+                authentication.getName()
+        );
+
+        return ResponseEntity.noContent().build();
     }
 }

@@ -9,16 +9,20 @@ import com.tripwise.backend.ai.dto.response.AIItineraryHistoryResponse;
 
 import com.tripwise.backend.ai.entity.AIItinerary;
 import com.tripwise.backend.ai.repository.AIItineraryRepository;
+import com.tripwise.backend.ai.service.AIItineraryService;
 
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.repository.UserRepository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 public class AIItineraryPersistenceService {
@@ -26,14 +30,17 @@ public class AIItineraryPersistenceService {
     private final AIItineraryRepository itineraryRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final AIItineraryService aiItineraryService;
 
     public AIItineraryPersistenceService(
             AIItineraryRepository itineraryRepository,
             UserRepository userRepository,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            AIItineraryService aiItineraryService) {
         this.itineraryRepository = itineraryRepository;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
+        this.aiItineraryService = aiItineraryService;
     }
 
     @Transactional
@@ -78,14 +85,27 @@ public class AIItineraryPersistenceService {
     }
 
     @Transactional(readOnly = true)
-    public List<AIItineraryHistoryResponse> getUserItineraries(
-            String email) {
+    public Page<AIItineraryHistoryResponse> getUserItineraries(
+            String email,
+            int page,
+            int size) {
+
+        if (page < 0 || size < 1 || size > 50) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid pagination parameters"
+            );
+        }
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
 
         return itineraryRepository
-                .findByUserEmailOrderByCreatedAtDesc(email)
-                .stream()
-                .map(this::convertToHistoryResponse)
-                .toList();
+                .findByUserEmailOrderByCreatedAtDesc(email, pageable)
+                .map(this::convertToHistoryResponse);
     }
 
     @Transactional(readOnly = true)
@@ -93,14 +113,63 @@ public class AIItineraryPersistenceService {
             Long id,
             String email) {
 
-        AIItinerary itinerary = itineraryRepository
+        AIItinerary itinerary = findOwnedItinerary(id, email);
+
+        return convertToHistoryResponse(itinerary);
+    }
+
+    @Transactional
+    public AIItineraryHistoryResponse regenerateItinerary(
+            Long id,
+            String email) {
+
+        AIItinerary itinerary = findOwnedItinerary(id, email);
+
+        try {
+            AITripRequest request = objectMapper.readValue(
+                    itinerary.getRequestJson(),
+                    AITripRequest.class
+            );
+
+            AIItineraryResponse response =
+                    aiItineraryService.generateItinerary(request);
+
+            itinerary.setResponseJson(
+                    objectMapper.writeValueAsString(response)
+            );
+
+            AIItinerary updated = itineraryRepository.save(itinerary);
+
+            return convertToHistoryResponse(updated);
+
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException(
+                    "Unable to process itinerary regeneration",
+                    exception
+            );
+        }
+    }
+
+    @Transactional
+    public void deleteItinerary(
+            Long id,
+            String email) {
+
+        AIItinerary itinerary = findOwnedItinerary(id, email);
+
+        itineraryRepository.delete(itinerary);
+    }
+
+    private AIItinerary findOwnedItinerary(
+            Long id,
+            String email) {
+
+        return itineraryRepository
                 .findByIdAndUserEmail(id, email)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Itinerary not found"
                 ));
-
-        return convertToHistoryResponse(itinerary);
     }
 
     private AIItineraryHistoryResponse convertToHistoryResponse(
