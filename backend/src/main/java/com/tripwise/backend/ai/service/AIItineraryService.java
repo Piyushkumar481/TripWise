@@ -1,5 +1,7 @@
 package com.tripwise.backend.ai.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.tripwise.backend.exception.AIServiceUnavailableException;
 
 import com.tripwise.backend.ai.dto.request.AITripRequest;
@@ -14,9 +16,16 @@ import org.springframework.stereotype.Service;
 public class AIItineraryService {
 
     private final ChatClient chatClient;
+    private final ObjectMapper objectMapper;
+    private final AIItineraryQualityValidator qualityValidator;
 
-    public AIItineraryService(ChatClient.Builder chatClientBuilder) {
+    public AIItineraryService(
+            ChatClient.Builder chatClientBuilder,
+            ObjectMapper objectMapper,
+            AIItineraryQualityValidator qualityValidator) {
         this.chatClient = chatClientBuilder.build();
+        this.objectMapper = objectMapper;
+        this.qualityValidator = qualityValidator;
     }
 
     public AIItineraryResponse generateItinerary(AITripRequest request) {
@@ -24,31 +33,106 @@ public class AIItineraryService {
         String interests = String.join(", ", request.interests());
 
         String systemPrompt = """
-                You are TripWise AI, an expert travel planner.
+                You are TripWise AI, an intelligent and reliable travel planning assistant.
 
-                Generate practical, personalized travel itineraries.
+                Generate complete, practical, personalized, and logically
+                structured travel itineraries.
 
-                Follow these rules:
-                1. Return exactly the requested number of days.
-                2. Include morning, afternoon, and evening activities.
-                3. Consider the destination, starting location, budget,
-                   number of travellers, interests, and travel style.
-                4. Include realistic estimated costs in INR.
-                5. The total estimated cost must represent all travellers.
-                6. Include transportation, accommodation, food,
-                   activities, and miscellaneous expenses.
-                7. Keep the plan within the given budget whenever practical.
-                8. If the budget is insufficient, explain this in the summary
-                   and suggest the closest practical alternative.
-                9. Consider geographical distance and travel time between places.
-                10. Include practical travel tips.
-                11. Never invent live ticket prices, availability,
-                    opening hours, or transport schedules.
-                12. Treat all prices as estimates, not guarantees.
-                13. Avoid unsafe or inaccessible travel routes.
-                14. Return structured data matching the requested
-                    AIItineraryResponse format.
-                15. Do not include Markdown or additional text.
+                USER REQUIREMENTS:
+                - Respect the requested destination.
+                - Respect the requested trip duration.
+                - Consider the starting location.
+                - Consider the total budget for all travellers.
+                - Consider the number of travellers.
+                - Consider the selected interests and travel style.
+
+                ITINERARY QUALITY RULES:
+
+                1. Generate exactly the requested number of days.
+                2. Number days sequentially, beginning with 1.
+                3. Every day must have a meaningful title and description.
+                4. Every day must contain at least one activity.
+                5. Every activity must have a time, name, location,
+                   description, estimated cost, and transport suggestion.
+                6. Organize activities into a logical daily schedule.
+                7. Avoid overlapping activities.
+                8. Consider geographical distance and reasonable travel time.
+                9. Include reasonable meal breaks and rest periods.
+                10. Avoid unnecessary repetition of attractions.
+                11. Personalize recommendations according to the user's
+                    interests and travel style.
+
+                BUDGET RULES:
+
+                12. Express all monetary values in INR.
+                13. Use numeric values for all monetary fields.
+                14. The total estimated cost must represent all travellers.
+                15. Include transportation, accommodation, food,
+                    activities, and miscellaneous expenses.
+                16. Provide a complete cost breakdown.
+                17. Keep the estimated costs consistent with the total budget.
+                18. If the budget is insufficient, explain this in the summary
+                    and suggest practical alternatives.
+                19. Treat all prices as estimates, not guarantees.
+
+                ACCURACY RULES:
+
+                20. Never invent confirmed booking availability.
+                21. Never invent live weather information.
+                22. Never invent current ticket prices, opening hours,
+                    or transportation schedules.
+                23. Avoid unsafe or inaccessible travel suggestions.
+                24. Do not leave required response fields empty.
+
+                RESPONSE STRUCTURE:
+
+                Return structured data matching the existing
+                AIItineraryResponse DTO exactly.
+
+                Required top-level fields:
+                - title
+                - destination
+                - summary
+                - duration
+                - totalEstimatedCost
+                - currency
+                - itinerary
+                - costBreakdown
+                - travelTips
+
+                The itinerary field must be an array of day plans.
+
+                Each day plan must contain:
+                - day
+                - title
+                - description
+                - activities
+
+                Each activity must contain:
+                - time
+                - name
+                - location
+                - description
+                - estimatedCost
+                - transportSuggestion
+
+                The costBreakdown object must contain:
+                - transportation
+                - accommodation
+                - food
+                - activities
+                - miscellaneous
+
+                The travelTips field must be an array of useful travel tips.
+
+                OUTPUT RULES:
+
+                - Use "itinerary", not "days".
+                - Use "day", not "dayNumber".
+                - Use all existing DTO field names.
+                - Set currency to INR.
+                - Return structured output only.
+                - Do not include Markdown or additional explanations.
                 """;
 
         String userPrompt = """
@@ -75,29 +159,75 @@ public class AIItineraryService {
                 request.duration()
         );
 
-        AIItineraryResponse response;
+        AIItineraryResponse response = null;
+        IllegalStateException lastValidationException = null;
 
-        try {
-            response = chatClient.prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .entity(AIItineraryResponse.class);
-        } catch (RuntimeException exception) {
-            if (isQuotaExceeded(exception)) {
-                throw new AIQuotaExceededException();
+        for (int attempt = 1; attempt <= 2; attempt++) {
+
+            String attemptPrompt = userPrompt;
+
+            if (attempt > 1 && lastValidationException != null) {
+
+                attemptPrompt = userPrompt + """
+
+                        Your previous response failed structural validation.
+
+                        Validation errors:
+                        %s
+
+                        Generate a corrected itinerary.
+
+                        Follow every original requirement.
+                        Preserve the original destination and travel preferences.
+                        Return the complete corrected response.
+                        Do not omit any required field.
+                        """.formatted(lastValidationException.getMessage());
+
             }
 
-            if (isModelUnavailable(exception)) {
-                throw new AIServiceUnavailableException();
+            try {
+                response = chatClient.prompt()
+                        .system(systemPrompt)
+                        .user(attemptPrompt)
+                        .call()
+                        .entity(AIItineraryResponse.class);
+
+            } catch (RuntimeException exception) {
+
+                if (isQuotaExceeded(exception)) {
+                    throw new AIQuotaExceededException();
+                }
+
+                if (isModelUnavailable(exception)) {
+                    throw new AIServiceUnavailableException();
+                }
+
+                throw exception;
             }
 
-            throw exception;
+            try {
+                validateResponse(response, request);
+
+                return response;
+
+            } catch (IllegalStateException validationException) {
+
+                lastValidationException = validationException;
+
+                if (attempt == 2) {
+                    throw new IllegalStateException(
+                            "AI could not generate a valid itinerary after "
+                                    + "two attempts. Validation errors: "
+                                    + validationException.getMessage(),
+                            validationException
+                    );
+                }
+            }
         }
 
-        validateResponse(response, request);
-
-        return response;
+        throw new IllegalStateException(
+                "AI itinerary generation failed after two attempts."
+        );
     }
 
     private void validateResponse(
@@ -147,6 +277,18 @@ public class AIItineraryService {
                 || response.totalEstimatedCost().signum() < 0) {
             throw new IllegalStateException(
                     "AI returned an invalid estimated total cost");
+        }
+
+        var qualityErrors = qualityValidator.validate(
+                objectMapper.valueToTree(response),
+                request.duration()
+        );
+
+        if (!qualityErrors.isEmpty()) {
+            throw new IllegalStateException(
+                    "AI itinerary quality validation failed: "
+                            + String.join("; ", qualityErrors)
+            );
         }
     }
 
