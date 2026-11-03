@@ -1,7 +1,12 @@
 package com.tripwise.backend.ai.service;
 
+import com.tripwise.backend.exception.AIServiceUnavailableException;
+
 import com.tripwise.backend.ai.dto.request.AITripRequest;
 import com.tripwise.backend.ai.dto.response.AIItineraryResponse;
+import com.tripwise.backend.exception.AIQuotaExceededException;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.stereotype.Service;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
@@ -70,11 +75,25 @@ public class AIItineraryService {
                 request.duration()
         );
 
-        AIItineraryResponse response = chatClient.prompt()
-                .system(systemPrompt)
-                .user(userPrompt)
-                .call()
-                .entity(AIItineraryResponse.class);
+        AIItineraryResponse response;
+
+        try {
+            response = chatClient.prompt()
+                    .system(systemPrompt)
+                    .user(userPrompt)
+                    .call()
+                    .entity(AIItineraryResponse.class);
+        } catch (RuntimeException exception) {
+            if (isQuotaExceeded(exception)) {
+                throw new AIQuotaExceededException();
+            }
+
+            if (isModelUnavailable(exception)) {
+                throw new AIServiceUnavailableException();
+            }
+
+            throw exception;
+        }
 
         validateResponse(response, request);
 
@@ -129,5 +148,62 @@ public class AIItineraryService {
             throw new IllegalStateException(
                     "AI returned an invalid estimated total cost");
         }
+    }
+
+    private boolean isQuotaExceeded(Throwable throwable) {
+
+        Throwable current = throwable;
+
+        while (current != null) {
+
+            String message = current.getMessage();
+
+            if (message != null) {
+
+                String normalized =
+                        message.toLowerCase(java.util.Locale.ROOT);
+
+                if (normalized.contains("quota")
+                        || normalized.contains("resource_exhausted")
+                        || normalized.contains("resource exhausted")
+                        || normalized.contains("429")
+                        || normalized.contains("rate limit")
+                        || normalized.contains("too many requests")) {
+
+                    return true;
+                }
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
+    }
+
+    private boolean isModelUnavailable(Throwable throwable) {
+
+        Throwable current = throwable;
+
+        while (current != null) {
+
+            String message = current.getMessage();
+
+            if (message != null) {
+
+                String normalized =
+                        message.toLowerCase(java.util.Locale.ROOT);
+
+                if (normalized.contains("503")
+                        || normalized.contains("high demand")
+                        || normalized.contains("service unavailable")
+                        || normalized.contains("temporarily unavailable")) {
+                    return true;
+                }
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
     }
 }

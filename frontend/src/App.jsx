@@ -10,6 +10,8 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Trips from "./pages/Trips"
 import AIItineraryHistory from "./pages/AIItineraryHistory"
+import AIItineraryGenerator from "./pages/AIItineraryGenerator"
+import AIItineraryDetails from "./pages/AIItineraryDetails"
 import CreateTrip from "./pages/CreateTrip"
 import TripDetails from "./pages/TripDetails"
 import TripWorkspaceLayout from "./layouts/TripWorkspaceLayout"
@@ -62,6 +64,15 @@ function App() {
             <Route
               path="/ai/itinerary/history"
               element={<AIItineraryHistory />}
+            />
+            <Route
+              path="/ai-itinerary/generate"
+              element={<AIItineraryGenerator />}
+            />
+
+            <Route
+              path="/ai-itinerary/:id"
+              element={<AIItineraryDetails />}
             />
 
             <Route
@@ -120,3 +131,4 @@ function App() {
 }
 
 export default App
+

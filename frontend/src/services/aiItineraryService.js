@@ -1,6 +1,11 @@
-﻿import api from "./api"
+import api from "./api"
 
 const aiItineraryService = {
+  generate(request) {
+    return api.post("/api/ai/itinerary/generate", request, {
+      timeout: 120000,
+    })
+  },
   getHistory(page = 0, size = 9) {
     return api.get("/api/ai/itinerary/history", {
       params: { page, size },
@@ -21,3 +26,24 @@ const aiItineraryService = {
 }
 
 export default aiItineraryService
+
+// Lesson 10: Named exports for the AI itinerary details page.
+// Reuse the existing Axios instance and authentication configuration.
+
+export async function getItineraryById(id) {
+  const response = await api.get(`/api/ai/itinerary/history/${id}`);
+  return response.data;
+}
+
+export async function regenerateItinerary(id) {
+  const response = await api.post(
+    `/api/ai/itinerary/history/${id}/regenerate`
+  );
+  return response.data;
+}
+
+export async function deleteItinerary(id) {
+  const response = await api.delete(`/api/ai/itinerary/history/${id}`);
+  return response.data;
+}
+

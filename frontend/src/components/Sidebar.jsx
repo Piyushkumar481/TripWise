@@ -7,6 +7,7 @@ import {
   LogOut,
   Plane,
   Settings,
+  Sparkles,
   Wallet,
   X,
 } from "lucide-react"
@@ -24,6 +25,11 @@ const navigationItems = [
     label: "Dashboard",
     icon: LayoutDashboard,
     path: "/dashboard",
+  },
+  {
+    label: "Generate AI Trip",
+    icon: Sparkles,
+    path: "/ai-itinerary/generate",
   },
   {
     label: "Itinerary",

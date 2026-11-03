@@ -236,6 +236,30 @@ public ResponseEntity<ErrorResponse> handleResponseStatusException(
     );
 }
 
+    @ExceptionHandler(AIQuotaExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIQuotaExceeded(
+            AIQuotaExceededException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "AI Quota Exceeded",
+                exception.getMessage(),
+                request
+        );
+    }
+    @ExceptionHandler(AIServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAIServiceUnavailable(
+            AIServiceUnavailableException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "AI Service Unavailable",
+                exception.getMessage(),
+                request
+        );
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception exception,
@@ -273,4 +297,3 @@ public ResponseEntity<ErrorResponse> handleResponseStatusException(
                 .body(response);
     }
 }
-

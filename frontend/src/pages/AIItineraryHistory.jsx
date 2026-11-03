@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useState } from "react"
+﻿import { Link } from "react-router-dom"
+import { useCallback, useEffect, useState } from "react"
 import {
   CalendarDays,
   ChevronLeft,
@@ -507,14 +508,13 @@ function AIItineraryHistory() {
                       </div>
 
                       <div className="mt-auto flex flex-wrap gap-2 pt-5">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedItem(item)}
+                        <Link
+                          to={`/ai-itinerary/${item.id}`}
                           className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#159b9b] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#087f82]"
                         >
                           <Eye size={16} />
-                          View itinerary
-                        </button>
+                          View Details
+                        </Link>
 
                         <button
                           type="button"
@@ -602,3 +602,5 @@ function AIItineraryHistory() {
 }
 
 export default AIItineraryHistory
+
+
