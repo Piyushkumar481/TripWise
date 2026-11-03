@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
@@ -15,6 +15,8 @@ import {
 
 import aiItineraryService from "../services/aiItineraryService"
 import { getApiErrorMessage } from "../utils/errorHandler"
+import AIGenerationProgress from "../components/AIGenerationProgress"
+import AIErrorMessage from "../components/AIErrorMessage"
 
 const interestOptions = [
   "Adventure",
@@ -91,8 +93,11 @@ function AIItineraryGenerator() {
     })
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const generationInProgress = useRef(false)
+
+  const generateWithCurrentValues = async () => {
+    if (generationInProgress.current || loading) return
+
     setError("")
 
     const destination = formData.destination.trim()
@@ -126,6 +131,7 @@ function AIItineraryGenerator() {
       return
     }
 
+    generationInProgress.current = true
     setLoading(true)
 
     try {
@@ -150,21 +156,39 @@ function AIItineraryGenerator() {
 
       navigate(`/ai-itinerary/${savedItinerary.id}`)
     } catch (err) {
-  if (err.response?.status === 429) {
-    setError(
-      "TripWise AI has reached its daily usage limit. Please try again later. Your trip details are still available in this form."
-    )
-  } else {
-    setError(
-      getApiErrorMessage(
-        err,
-        "Unable to generate your itinerary. Please try again."
-      )
-    )
-  }
-} finally {
+      console.error("AI itinerary generation failed:", err)
+
+      const status = err?.response?.status
+
+      if (!err.response && err.request) {
+        setError(
+          "Unable to connect to TripWise. Check your internet connection and backend server."
+        )
+      } else if (status === 401) {
+        setError("Your session has expired. Please log in again.")
+      } else if (status === 403) {
+        setError("You don't have permission to generate this itinerary.")
+      } else if (status === 429) {
+        setError(
+          "TripWise AI has reached its daily usage limit. Please try again later. Your trip details are still available in this form."
+        )
+      } else {
+        setError(
+          getApiErrorMessage(
+            err,
+            "Unable to generate your itinerary. Please try again."
+          )
+        )
+      }
+    } finally {
+      generationInProgress.current = false
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    await generateWithCurrentValues()
   }
 
   return (
@@ -198,7 +222,7 @@ function AIItineraryGenerator() {
 
           <p className="mt-4 max-w-xl text-sm leading-7 text-white/70 sm:text-base">
             Tell TripWise where you want to go, what you enjoy, and your
-            budget. We’ll create a personalized itinerary for your journey.
+            budget. Weâ€™ll create a personalized itinerary for your journey.
           </p>
         </div>
 
@@ -218,7 +242,10 @@ function AIItineraryGenerator() {
           My Saved AI Itineraries
         </button>
       </div>
-<form
+      {loading ? (
+        <AIGenerationProgress />
+      ) : (
+      <form
         onSubmit={handleSubmit}
         className="overflow-hidden rounded-[28px] border border-[#dce8e4] bg-white shadow-[0_8px_28px_rgba(23,35,60,0.04)]"
       >
@@ -299,7 +326,7 @@ function AIItineraryGenerator() {
             <div>
               <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#17233c]">
                 <Wallet size={16} className="text-[#087f82]" />
-                Total budget (₹)
+                Total budget
               </label>
               <input
                 name="budget"
@@ -360,7 +387,7 @@ function AIItineraryGenerator() {
                         : "border-[#dce5e1] bg-white text-[#64748b] hover:border-[#159b9b]"
                     }`}
                   >
-                    {selected ? "✓ " : ""}
+                    {selected ? " " : ""}
                     {interest}
                   </button>
                 )
@@ -402,12 +429,10 @@ function AIItineraryGenerator() {
           </div>
 
           {error && (
-            <div
-              role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-            >
-              {error}
-            </div>
+            <AIErrorMessage
+              message={error}
+              onRetry={generateWithCurrentValues}
+            />
           )}
 
           <div className="flex flex-col-reverse gap-3 border-t border-[#edf0ed] pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -435,8 +460,10 @@ function AIItineraryGenerator() {
           </div>
         </div>
       </form>
+      )}
     </main>
   )
 }
 
 export default AIItineraryGenerator
+
