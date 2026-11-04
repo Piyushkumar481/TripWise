@@ -11,6 +11,7 @@ import {
   Lightbulb,
   LoaderCircle,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -20,6 +21,7 @@ import {
 } from "../services/aiItineraryService";
 
 import "./AIItineraryDetails.css";
+import AIItineraryModification from "./AIItineraryModification";
 
 function formatCurrency(value, currency = "INR") {
   if (value == null || Number.isNaN(Number(value))) {
@@ -45,6 +47,7 @@ function AIItineraryDetails() {
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showModification, setShowModification] = useState(false);
   const [error, setError] = useState("");
 
   const loadItinerary = useCallback(async () => {
@@ -211,6 +214,16 @@ function AIItineraryDetails() {
 
           <div className="details-hero-actions">
             <button
+              type="button"
+              className="details-action-button regenerate-button"
+              onClick={() => setShowModification((previous) => !previous)}
+              disabled={regenerating || deleting}
+            >
+              <Sparkles size={17} />
+              {showModification ? "Close AI modification" : "Modify with AI"}
+            </button>
+
+            <button
               className="details-action-button regenerate-button"
               onClick={handleRegenerate}
               disabled={regenerating || deleting}
@@ -239,6 +252,17 @@ function AIItineraryDetails() {
             </button>
           </div>
         </section>
+
+        {showModification && (
+          <AIItineraryModification
+            itineraryId={id}
+            onClose={() => setShowModification(false)}
+            onSaved={async () => {
+              await loadItinerary();
+              setShowModification(false);
+            }}
+          />
+        )}
 
         <section className="itinerary-section">
           <div className="section-heading">
