@@ -29,3 +29,7 @@ uploads/
 /docker-test-password.txt
 *.lesson*-backup
 *.backup
+
+# Ignore local environment overrides
+.env.*
+!.env.example
