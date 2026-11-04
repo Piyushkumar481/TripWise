@@ -23,6 +23,7 @@ import {
 import "./AIItineraryDetails.css";
 import AIItineraryModification from "./AIItineraryModification";
 import AITravelRecommendations from "./AITravelRecommendations";
+import AIBudgetOptimization from "./AIBudgetOptimization";
 
 function formatCurrency(value, currency = "INR") {
   if (value == null || Number.isNaN(Number(value))) {
@@ -50,6 +51,7 @@ function AIItineraryDetails() {
   const [deleting, setDeleting] = useState(false);
   const [showModification, setShowModification] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [showBudgetOptimization, setShowBudgetOptimization] = useState(false);
   const [error, setError] = useState("");
 
   const loadItinerary = useCallback(async () => {
@@ -235,7 +237,20 @@ function AIItineraryDetails() {
               aria-expanded={showRecommendations}
             >
               <Sparkles size={17} />
-              {showRecommendations ? "Close recommendations" : "Discover Places with AI"}
+              {showRecommendations ? "Close places" : "Discover Places"}
+            </button>
+
+            <button
+              type="button"
+              className="details-action-button regenerate-button"
+              onClick={() =>
+                setShowBudgetOptimization((previous) => !previous)
+              }
+              disabled={regenerating || deleting}
+              aria-expanded={showBudgetOptimization}
+            >
+              <Wallet size={17} />
+              {showBudgetOptimization ? "Close budget" : "Optimize Budget"}
             </button>
 
             <button
@@ -281,6 +296,13 @@ function AIItineraryDetails() {
 
         {showRecommendations && (
           <AITravelRecommendations
+            itineraryId={id}
+            itinerary={itinerary}
+          />
+        )}
+
+        {showBudgetOptimization && (
+          <AIBudgetOptimization
             itineraryId={id}
             itinerary={itinerary}
           />

@@ -473,3 +473,108 @@
     width: 100%;
   }
 }
+
+/* Horizontal itinerary actions below trip metadata */
+/* Horizontal itinerary actions below trip metadata */
+
+.itinerary-details-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+}
+
+.details-hero-content {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.details-hero-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.details-hero-actions .details-action-button {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0 !important;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .details-hero-actions {
+    gap: 10px !important;
+  }
+
+  .details-hero-actions .details-action-button {
+    flex: 1 1 calc(50% - 10px) !important;
+  }
+}
+
+
+/* Professional mobile itinerary action layout */
+
+@media (max-width: 700px) {
+
+  .details-hero-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+
+  .details-hero-actions .details-action-button {
+    display: flex !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 76px;
+    padding: 12px 7px !important;
+    margin: 0 !important;
+    flex: none !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    text-wrap: balance;
+  }
+
+  .details-hero-actions .details-action-button svg {
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+  }
+
+  .details-hero-actions .delete-button {
+    grid-column: 1 / -1;
+    min-height: 46px;
+    flex-direction: row !important;
+    gap: 9px !important;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+  }
+
+  .details-hero-actions .delete-button svg {
+    width: 17px;
+    height: 17px;
+  }
+}
