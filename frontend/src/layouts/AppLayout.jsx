@@ -1,11 +1,19 @@
 import { useState } from "react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 
 import Navbar from "../components/Navbar"
 import Sidebar from "../components/Sidebar"
+import AITravelChat from "../pages/AITravelChat"
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation()
+
+  const itineraryMatch = location.pathname.match(
+    /^\/ai-itinerary\/(\d+)\/?$/
+  )
+
+  const itineraryId = itineraryMatch?.[1] ?? null
 
   return (
     <div className="min-h-screen bg-[#f7f5ef] text-[#17233c]">
@@ -30,6 +38,8 @@ function AppLayout() {
         </div>
 
       </div>
+
+      <AITravelChat itineraryId={itineraryId} />
 
     </div>
   )
