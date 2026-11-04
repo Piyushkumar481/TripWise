@@ -22,6 +22,7 @@ import {
 
 import "./AIItineraryDetails.css";
 import AIItineraryModification from "./AIItineraryModification";
+import AITravelRecommendations from "./AITravelRecommendations";
 
 function formatCurrency(value, currency = "INR") {
   if (value == null || Number.isNaN(Number(value))) {
@@ -48,6 +49,7 @@ function AIItineraryDetails() {
   const [regenerating, setRegenerating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showModification, setShowModification] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const [error, setError] = useState("");
 
   const loadItinerary = useCallback(async () => {
@@ -224,6 +226,19 @@ function AIItineraryDetails() {
             </button>
 
             <button
+              type="button"
+              className="details-action-button regenerate-button"
+              onClick={() =>
+                setShowRecommendations((previous) => !previous)
+              }
+              disabled={regenerating || deleting}
+              aria-expanded={showRecommendations}
+            >
+              <Sparkles size={17} />
+              {showRecommendations ? "Close recommendations" : "Discover Places with AI"}
+            </button>
+
+            <button
               className="details-action-button regenerate-button"
               onClick={handleRegenerate}
               disabled={regenerating || deleting}
@@ -261,6 +276,13 @@ function AIItineraryDetails() {
               await loadItinerary();
               setShowModification(false);
             }}
+          />
+        )}
+
+        {showRecommendations && (
+          <AITravelRecommendations
+            itineraryId={id}
+            itinerary={itinerary}
           />
         )}
 
