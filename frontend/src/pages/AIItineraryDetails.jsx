@@ -54,13 +54,18 @@ function AIItineraryDetails() {
   const [showBudgetOptimization, setShowBudgetOptimization] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchItinerary = useCallback(async () => {
+    const response = await getItineraryById(id);
+    return response.data ?? response;
+  }, [id]);
+
   const loadItinerary = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await getItineraryById(id);
-      setSavedItinerary(response.data ?? response);
+      const itineraryData = await fetchItinerary();
+      setSavedItinerary(itineraryData);
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -69,11 +74,36 @@ function AIItineraryDetails() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [fetchItinerary]);
 
   useEffect(() => {
-    loadItinerary();
-  }, [loadItinerary]);
+    let active = true;
+
+    fetchItinerary()
+      .then((itineraryData) => {
+        if (active) {
+          setSavedItinerary(itineraryData);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          setError(
+            err?.response?.data?.message ||
+              "Unable to load this itinerary. It may have been deleted or you may not have access."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fetchItinerary]);
 
   async function handleRegenerate() {
     if (

@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { useCallback, useEffect, useState } from "react"
 import {
   CalendarDays,
@@ -282,32 +282,76 @@ function AIItineraryHistory() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [regeneratingId, setRegeneratingId] = useState(null)
 
+  const fetchHistory = useCallback(async (pageNumber = 0) => {
+    const response = await aiItineraryService.getHistory(
+      pageNumber,
+      PAGE_SIZE
+    );
+
+    const data = response.data;
+
+    return {
+      history: Array.isArray(data.content) ? data.content : [],
+      page: data.number ?? pageNumber,
+      totalPages: data.totalPages ?? 0,
+      totalElements: data.totalElements ?? 0,
+    };
+  }, []);
+
   const loadHistory = useCallback(async (pageNumber = 0) => {
-    setLoading(true)
-    setError("")
+    setLoading(true);
+    setError("");
 
     try {
-      const response = await aiItineraryService.getHistory(pageNumber, PAGE_SIZE)
-      const data = response.data
+      const data = await fetchHistory(pageNumber);
 
-      setHistory(Array.isArray(data.content) ? data.content : [])
-      setPage(data.number ?? pageNumber)
-      setTotalPages(data.totalPages ?? 0)
-      setTotalElements(data.totalElements ?? 0)
+      setHistory(data.history);
+      setPage(data.page);
+      setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
     } catch (err) {
       setError(
         err.response?.data?.message ||
         err.response?.data?.error ||
         "Unable to load your saved AI itineraries."
-      )
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, [fetchHistory]);
 
   useEffect(() => {
-    loadHistory(0)
-  }, [loadHistory])
+    let active = true;
+
+    fetchHistory(0)
+      .then((data) => {
+        if (active) {
+          setHistory(data.history);
+          setPage(data.page);
+          setTotalPages(data.totalPages);
+          setTotalElements(data.totalElements);
+          setError("");
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          setError(
+            err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Unable to load your saved AI itineraries."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fetchHistory]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return
