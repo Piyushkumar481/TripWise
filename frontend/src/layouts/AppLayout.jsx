@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 
 import Navbar from "../components/Navbar"
@@ -8,6 +8,22 @@ import AITravelChat from "../pages/AITravelChat"
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [sidebarOpen])
 
   const itineraryMatch = location.pathname.match(
     /^\/ai-itinerary\/(\d+)\/?$/
@@ -29,9 +45,10 @@ function AppLayout() {
 
           <Navbar
             onMenuClick={() => setSidebarOpen(true)}
+            sidebarOpen={sidebarOpen}
           />
 
-          <main className="min-h-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <main className="min-h-0 min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
             <Outlet />
           </main>
 

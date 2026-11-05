@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Plane,
-  Settings,
+
   Sparkles,
   Wallet,
   X,
@@ -78,13 +78,16 @@ function Sidebar({ isOpen, onClose }) {
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-[#17233c]/20 backdrop-blur-sm lg:hidden"
+          aria-hidden="true"
           onClick={onClose}
         />
       )}
 
       <aside
+        id="app-sidebar"
+        aria-label="Primary navigation"
         className={`
-          fixed left-0 top-0 z-50 flex h-screen w-[275px] flex-col
+          fixed left-0 top-0 z-50 flex h-screen w-[275px] flex-col overflow-y-auto overscroll-contain
           border-r border-[#e5e9e5] bg-white
           transition-transform duration-300
           lg:static lg:z-auto lg:translate-x-0
@@ -209,15 +212,6 @@ function Sidebar({ isOpen, onClose }) {
             </div>
 
           </div>
-
-          <NavLink
-            to="/settings"
-            onClick={onClose}
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-[#687583] transition hover:bg-[#f4f6f4] hover:text-[#17233c]"
-          >
-            <Settings size={19} />
-            Settings
-          </NavLink>
 
           <button
             type="button"

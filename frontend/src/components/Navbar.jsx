@@ -8,7 +8,7 @@ import {
 
 import { useAuth } from "../context/useAuth"
 
-function Navbar({ onMenuClick }) {
+function Navbar({ onMenuClick, sidebarOpen = false }) {
   const { user } = useAuth()
 
   const firstName =
@@ -21,9 +21,12 @@ function Navbar({ onMenuClick }) {
 
         {/* MOBILE MENU */}
         <button
+          type="button"
           onClick={onMenuClick}
+          aria-controls="app-sidebar"
+          aria-expanded={sidebarOpen}
           className="rounded-xl p-2 text-[#596777] transition hover:bg-[#f1f5f3] lg:hidden"
-          aria-label="Open navigation"
+          aria-label="Toggle navigation"
         >
           <Menu size={22} />
         </button>
