@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripwise.backend.ai.dto.AITravelChatRequest;
 import com.tripwise.backend.ai.entity.AIItinerary;
 import com.tripwise.backend.ai.repository.AIItineraryRepository;
+import com.tripwise.backend.exception.AIQuotaExceededException;
+import com.tripwise.backend.exception.AIServiceUnavailableException;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
@@ -142,12 +144,28 @@ public class AITravelChatService {
             );
         }
 
-        String answer = chatClient
-                .prompt()
-                .system(systemPrompt)
-                .user(userPrompt)
-                .call()
-                .content();
+        String answer;
+
+        try {
+            answer = chatClient
+                    .prompt()
+                    .system(systemPrompt)
+                    .user(userPrompt)
+                    .call()
+                    .content();
+
+        } catch (RuntimeException exception) {
+
+            if (isQuotaExceeded(exception)) {
+                throw new AIQuotaExceededException();
+            }
+
+            if (isModelUnavailable(exception)) {
+                throw new AIServiceUnavailableException();
+            }
+
+            throw exception;
+        }
 
         if (answer == null || answer.isBlank()) {
             throw new IllegalStateException(
@@ -157,4 +175,52 @@ public class AITravelChatService {
 
         return answer.trim();
     }
-}
+
+    private boolean isQuotaExceeded(Throwable exception) {
+        return containsCauseMessage(
+                exception,
+                "429",
+                "quota",
+                "resource_exhausted",
+                "resource exhausted",
+                "rate limit",
+                "too many requests"
+        );
+    }
+
+    private boolean isModelUnavailable(Throwable exception) {
+        return containsCauseMessage(
+                exception,
+                "503",
+                "high demand",
+                "service unavailable",
+                "temporarily unavailable"
+        );
+    }
+
+    private boolean containsCauseMessage(
+            Throwable exception,
+            String... fragments) {
+
+        for (Throwable current = exception;
+             current != null;
+             current = current.getCause()) {
+
+            String message = current.getMessage();
+
+            if (message == null) {
+                continue;
+            }
+
+            String normalized =
+                    message.toLowerCase(java.util.Locale.ROOT);
+
+            for (String fragment : fragments) {
+                if (normalized.contains(fragment)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }}
