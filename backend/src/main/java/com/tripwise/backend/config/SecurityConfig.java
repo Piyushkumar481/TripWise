@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 
 import org.springframework.http.HttpMethod;
 
@@ -26,6 +28,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final Environment environment;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -36,6 +39,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
     ) throws Exception {
+
+        boolean developmentProfile =
+                environment.acceptsProfiles(Profiles.of("dev"))
+                        && !environment.acceptsProfiles(Profiles.of("prod"));
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -48,29 +55,37 @@ public class SecurityConfig {
                         )
                 )
 
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(
+                            HttpMethod.POST,
+                            "/api/auth/register",
+                            "/api/auth/login"
+                    ).permitAll();
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/auth/register",
-                                "/api/auth/login"
-                        ).permitAll()
+                    auth.requestMatchers(
+                            "/api/health",
+                            "/actuator/health",
+                            "/actuator/info"
+                    ).permitAll();
 
-                        .requestMatchers(
+                    if (developmentProfile) {
+                        auth.requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
-                        ).permitAll()
+                        ).permitAll();
+                    } else {
+                        auth.requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).denyAll();
+                    }
 
-                        .requestMatchers(
-                                "/api/health",
-                                "/actuator/health",
-                                "/actuator/info"
-                        ).permitAll()
+                    auth.anyRequest().authenticated();
+                });
 
-                        .anyRequest().authenticated()
-                )
-
+        http
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(
                                 authenticationEntryPoint
