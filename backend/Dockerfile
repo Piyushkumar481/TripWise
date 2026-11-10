@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY src ./src
 
 RUN mvn -B -ntp clean package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
@@ -20,5 +20,7 @@ RUN chown -R tripwise:tripwise /app
 USER tripwise
 
 EXPOSE 8080
+
+ENV SPRING_PROFILES_ACTIVE=prod
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

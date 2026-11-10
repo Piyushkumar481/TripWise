@@ -5,40 +5,48 @@ import com.tripwise.backend.ai.dto.response.AIItineraryResponse;
 import com.tripwise.backend.ai.dto.response.AIItineraryHistoryResponse;
 import com.tripwise.backend.ai.service.AIItineraryService;
 import com.tripwise.backend.ai.service.AIItineraryPersistenceService;
+import com.tripwise.backend.ai.service.AIProviderClient;
+import com.tripwise.backend.ai.service.AIUseCase;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai")
+@Validated
 public class AIController {
 
-    private final ChatClient chatClient;
+    private final AIProviderClient aiProviderClient;
     private final AIItineraryService aiItineraryService;
     private final AIItineraryPersistenceService persistenceService;
 
     public AIController(
-            ChatClient chatClient,
+            AIProviderClient aiProviderClient,
             AIItineraryService aiItineraryService,
             AIItineraryPersistenceService persistenceService) {
-        this.chatClient = chatClient;
+        this.aiProviderClient = aiProviderClient;
         this.aiItineraryService = aiItineraryService;
         this.persistenceService = persistenceService;
     }
 
     @GetMapping("/test")
     public String testAI(
-            @RequestParam(defaultValue = "Hello Gemini!") String message) {
+            @RequestParam(defaultValue = "Hello Gemini!")
+            @Size(max = 500) String message,
+            Authentication authentication) {
 
-        return chatClient.prompt()
-                .user(message)
-                .call()
-                .content();
+        return aiProviderClient.generateContent(
+                authentication.getName(),
+                "You are TripWise AI. Respond concisely.",
+                message,
+                AIUseCase.DIAGNOSTIC
+        );
     }
 
     @PostMapping("/itinerary/generate")
@@ -47,7 +55,10 @@ public class AIController {
             Authentication authentication) {
 
         AIItineraryResponse response =
-                aiItineraryService.generateItinerary(request);
+                aiItineraryService.generateItinerary(
+                        request,
+                        authentication.getName()
+                );
 
         AIItineraryHistoryResponse saved =
                 persistenceService.saveItinerary(

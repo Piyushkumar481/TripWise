@@ -118,7 +118,6 @@ public class AIItineraryPersistenceService {
         return convertToHistoryResponse(itinerary);
     }
 
-    @Transactional
     public AIItineraryHistoryResponse regenerateItinerary(
             Long id,
             String email) {
@@ -132,7 +131,7 @@ public class AIItineraryPersistenceService {
             );
 
             AIItineraryResponse response =
-                    aiItineraryService.generateItinerary(request);
+                    aiItineraryService.generateItinerary(request, email);
 
             itinerary.setResponseJson(
                     objectMapper.writeValueAsString(response)

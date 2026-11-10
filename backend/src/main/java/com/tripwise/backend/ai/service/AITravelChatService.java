@@ -10,7 +10,6 @@ import com.tripwise.backend.ai.repository.AIItineraryRepository;
 import com.tripwise.backend.exception.AIQuotaExceededException;
 import com.tripwise.backend.exception.AIServiceUnavailableException;
 
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,16 +17,16 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class AITravelChatService {
 
-    private final ChatClient chatClient;
+    private final AIProviderClient aiProviderClient;
     private final AIItineraryRepository itineraryRepository;
     private final ObjectMapper objectMapper;
 
     public AITravelChatService(
-            ChatClient.Builder chatClientBuilder,
+            AIProviderClient aiProviderClient,
             AIItineraryRepository itineraryRepository,
             ObjectMapper objectMapper) {
 
-        this.chatClient = chatClientBuilder.build();
+        this.aiProviderClient = aiProviderClient;
         this.itineraryRepository = itineraryRepository;
         this.objectMapper = objectMapper;
     }
@@ -147,12 +146,12 @@ public class AITravelChatService {
         String answer;
 
         try {
-            answer = chatClient
-                    .prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .content();
+            answer = aiProviderClient.generateContent(
+                    authenticatedUserEmail,
+                    systemPrompt,
+                    userPrompt,
+                    AIUseCase.CHAT
+            );
 
         } catch (RuntimeException exception) {
 

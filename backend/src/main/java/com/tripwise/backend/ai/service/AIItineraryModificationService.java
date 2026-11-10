@@ -11,7 +11,6 @@ import com.tripwise.backend.ai.repository.AIItineraryRepository;
 import com.tripwise.backend.exception.AIQuotaExceededException;
 import com.tripwise.backend.exception.AIServiceUnavailableException;
 
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,18 +23,18 @@ import java.util.List;
 public class AIItineraryModificationService {
 
     private final AIItineraryRepository itineraryRepository;
-    private final ChatClient chatClient;
+    private final AIProviderClient aiProviderClient;
     private final ObjectMapper objectMapper;
     private final AIItineraryQualityValidator qualityValidator;
 
     public AIItineraryModificationService(
             AIItineraryRepository itineraryRepository,
-            ChatClient chatClient,
+            AIProviderClient aiProviderClient,
             ObjectMapper objectMapper,
             AIItineraryQualityValidator qualityValidator) {
 
         this.itineraryRepository = itineraryRepository;
-        this.chatClient = chatClient;
+        this.aiProviderClient = aiProviderClient;
         this.objectMapper = objectMapper;
         this.qualityValidator = qualityValidator;
     }
@@ -174,12 +173,12 @@ public class AIItineraryModificationService {
         String aiResponse;
 
         try {
-            aiResponse = chatClient
-                    .prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .content();
+            aiResponse = aiProviderClient.generateContent(
+                    authenticatedUserEmail,
+                    systemPrompt,
+                    userPrompt,
+                    AIUseCase.MODIFICATION
+            );
 
         } catch (RuntimeException exception) {
 

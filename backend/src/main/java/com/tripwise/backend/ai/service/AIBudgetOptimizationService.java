@@ -12,10 +12,8 @@ import com.tripwise.backend.ai.repository.AIItineraryRepository;
 import com.tripwise.backend.exception.AIQuotaExceededException;
 import com.tripwise.backend.exception.AIServiceUnavailableException;
 
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -30,7 +28,7 @@ import java.util.Set;
 public class AIBudgetOptimizationService {
 
     private final AIItineraryRepository itineraryRepository;
-    private final ChatClient chatClient;
+    private final AIProviderClient aiProviderClient;
     private final ObjectMapper objectMapper;
 
     private static final List<String> SUPPORTED_CATEGORIES = List.of(
@@ -43,15 +41,14 @@ public class AIBudgetOptimizationService {
 
     public AIBudgetOptimizationService(
             AIItineraryRepository itineraryRepository,
-            ChatClient chatClient,
+            AIProviderClient aiProviderClient,
             ObjectMapper objectMapper) {
 
         this.itineraryRepository = itineraryRepository;
-        this.chatClient = chatClient;
+        this.aiProviderClient = aiProviderClient;
         this.objectMapper = objectMapper;
     }
 
-    @Transactional(readOnly = true)
     public AIBudgetOptimizationResponse optimizeBudget(
             Long itineraryId,
             String authenticatedUserEmail,
@@ -269,12 +266,12 @@ public class AIBudgetOptimizationService {
         String aiResponse;
 
         try {
-            aiResponse = chatClient
-                    .prompt()
-                    .system(systemPrompt)
-                    .user(userPrompt)
-                    .call()
-                    .content();
+            aiResponse = aiProviderClient.generateContent(
+                    authenticatedUserEmail,
+                    systemPrompt,
+                    userPrompt,
+                    AIUseCase.BUDGET_OPTIMIZATION
+            );
 
         } catch (RuntimeException exception) {
 

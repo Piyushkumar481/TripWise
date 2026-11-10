@@ -68,6 +68,13 @@ public class SecurityConfig {
                             "/actuator/info"
                     ).permitAll();
 
+                    if (!developmentProfile) {
+                        auth.requestMatchers(
+                                HttpMethod.GET,
+                                "/api/ai/test"
+                        ).denyAll();
+                    }
+
                     if (developmentProfile) {
                         auth.requestMatchers(
                                 "/swagger-ui/**",

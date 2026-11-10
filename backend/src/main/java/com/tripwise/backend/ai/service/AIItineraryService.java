@@ -7,28 +7,27 @@ import com.tripwise.backend.exception.AIServiceUnavailableException;
 import com.tripwise.backend.ai.dto.request.AITripRequest;
 import com.tripwise.backend.ai.dto.response.AIItineraryResponse;
 import com.tripwise.backend.exception.AIQuotaExceededException;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.stereotype.Service;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AIItineraryService {
 
-    private final ChatClient chatClient;
+    private final AIProviderClient aiProviderClient;
     private final ObjectMapper objectMapper;
     private final AIItineraryQualityValidator qualityValidator;
 
     public AIItineraryService(
-            ChatClient.Builder chatClientBuilder,
+            AIProviderClient aiProviderClient,
             ObjectMapper objectMapper,
             AIItineraryQualityValidator qualityValidator) {
-        this.chatClient = chatClientBuilder.build();
+        this.aiProviderClient = aiProviderClient;
         this.objectMapper = objectMapper;
         this.qualityValidator = qualityValidator;
     }
 
-    public AIItineraryResponse generateItinerary(AITripRequest request) {
+    public AIItineraryResponse generateItinerary(
+            AITripRequest request,
+            String authenticatedUserEmail) {
 
         String interests = String.join(", ", request.interests());
 
@@ -186,11 +185,13 @@ public class AIItineraryService {
             }
 
             try {
-                response = chatClient.prompt()
-                        .system(systemPrompt)
-                        .user(attemptPrompt)
-                        .call()
-                        .entity(AIItineraryResponse.class);
+                response = aiProviderClient.generateEntity(
+                        authenticatedUserEmail,
+                        systemPrompt,
+                        attemptPrompt,
+                        AIUseCase.ITINERARY,
+                        AIItineraryResponse.class
+                );
 
             } catch (RuntimeException exception) {
 

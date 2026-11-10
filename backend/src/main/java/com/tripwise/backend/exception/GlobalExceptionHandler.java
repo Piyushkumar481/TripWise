@@ -248,6 +248,53 @@ public ResponseEntity<ErrorResponse> handleResponseStatusException(
                 request
         );
     }
+
+    @ExceptionHandler(AIRequestRateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIRequestRateLimitExceeded(
+            AIRequestRateLimitExceededException exception,
+            HttpServletRequest request) {
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(
+                        "Retry-After",
+                        Long.toString(exception.getRetryAfterSeconds())
+                )
+                .body(new ErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        "Too Many Requests",
+                        exception.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(AIUsageLimitStoreUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAIUsageLimitStoreUnavailable(
+            AIUsageLimitStoreUnavailableException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "AI Usage Limit Store Unavailable",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(AIOutputLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIOutputLimitExceeded(
+            AIOutputLimitExceededException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.BAD_GATEWAY,
+                "AI Response Limit Exceeded",
+                exception.getMessage(),
+                request
+        );
+    }
+
     @ExceptionHandler(AIServiceUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleAIServiceUnavailable(
             AIServiceUnavailableException exception,

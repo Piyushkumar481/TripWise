@@ -13,11 +13,10 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.ai.chat.client.ChatClient;
-
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,10 +24,7 @@ import static org.mockito.Mockito.when;
 class AITravelChatServiceTest {
 
     @Mock
-    private ChatClient.Builder chatClientBuilder;
-
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private ChatClient chatClient;
+    private AIProviderClient aiProviderClient;
 
     @Mock
     private AIItineraryRepository itineraryRepository;
@@ -40,10 +36,9 @@ class AITravelChatServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(chatClientBuilder.build()).thenReturn(chatClient);
-
+        aiProviderClient = mock(AIProviderClient.class);
         service = new AITravelChatService(
-                chatClientBuilder,
+                aiProviderClient,
                 itineraryRepository,
                 objectMapper
         );
@@ -51,12 +46,12 @@ class AITravelChatServiceTest {
 
     @Test
     void mapsQuotaFailureToAIQuotaExceededException() {
-        when(chatClient.prompt()
-                .system(anyString())
-                .user(anyString())
-                .call()
-                .content())
-                .thenThrow(new RuntimeException("429 quota exceeded"));
+        when(aiProviderClient.generateContent(
+                eq("test@example.com"),
+                anyString(),
+                anyString(),
+                eq(AIUseCase.CHAT)
+        )).thenThrow(new RuntimeException("429 quota exceeded"));
 
         assertThrows(
                 AIQuotaExceededException.class,
@@ -66,12 +61,12 @@ class AITravelChatServiceTest {
 
     @Test
     void mapsUnavailableProviderToAIServiceUnavailableException() {
-        when(chatClient.prompt()
-                .system(anyString())
-                .user(anyString())
-                .call()
-                .content())
-                .thenThrow(new RuntimeException("503 service unavailable"));
+        when(aiProviderClient.generateContent(
+                eq("test@example.com"),
+                anyString(),
+                anyString(),
+                eq(AIUseCase.CHAT)
+        )).thenThrow(new RuntimeException("503 service unavailable"));
 
         assertThrows(
                 AIServiceUnavailableException.class,
@@ -84,12 +79,12 @@ class AITravelChatServiceTest {
         RuntimeException providerFailure =
                 new RuntimeException("Unexpected provider failure");
 
-        when(chatClient.prompt()
-                .system(anyString())
-                .user(anyString())
-                .call()
-                .content())
-                .thenThrow(providerFailure);
+        when(aiProviderClient.generateContent(
+                eq("test@example.com"),
+                anyString(),
+                anyString(),
+                eq(AIUseCase.CHAT)
+        )).thenThrow(providerFailure);
 
         RuntimeException actual = assertThrows(
                 RuntimeException.class,
