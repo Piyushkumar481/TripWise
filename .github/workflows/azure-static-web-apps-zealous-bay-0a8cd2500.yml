@@ -3,11 +3,11 @@ name: Azure Static Web Apps CI/CD
 on:
   push:
     branches:
-      - feature/tripwise-ai-expansion
+      - main
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - feature/tripwise-ai-expansion
+      - main
 
 jobs:
   build_and_deploy_job:
@@ -26,7 +26,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_BAY_0A8CD2500 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          production_branch: "feature/tripwise-ai-expansion"
+          production_branch: "main"
           app_location: "frontend"
           api_location: ""
           output_location: "dist"
