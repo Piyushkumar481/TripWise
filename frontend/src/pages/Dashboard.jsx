@@ -114,32 +114,28 @@ function Dashboard() {
           <StatCard
             type="trips"
             label="Total Trips"
-            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.totalTrips}
+            value={dashboardStats.totalTrips} loading={loading}
             description="Journeys planned"
           />
 
           <StatCard
             type="countries"
             label="Upcoming Trips"
-            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.upcomingTrips}
+            value={dashboardStats.upcomingTrips} loading={loading}
             description="Future journeys"
           />
 
           <StatCard
             type="budget"
             label="Total Budget"
-            value={
-              loading
-                ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
-                : formatBudget(dashboardStats.totalBudget)
-            }
+            value={formatBudget(dashboardStats.totalBudget)} loading={loading}
             description="Across your trips"
           />
 
           <StatCard
             type="expenses"
             label="Active Trips"
-            value={loading ? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â" : dashboardStats.activeTrips}
+            value={dashboardStats.activeTrips} loading={loading}
             description="Trips happening now"
           />
 

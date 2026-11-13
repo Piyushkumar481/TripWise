@@ -5,9 +5,18 @@ spring:
       max-request-size: 12MB
   application:
     name: tripwise
-
-  profiles:
-    active: dev
+  ai:
+    retry:
+      # Spring AI retries are disabled; the Google SDK client also uses one attempt.
+      max-attempts: 0
+    model:
+      chat: google-genai
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          model: gemini-3.6-flash
+          temperature: 0.7
 
   jpa:
     open-in-view: false
@@ -29,6 +38,18 @@ logging:
     root: INFO
 
 tripwise:
+  ai:
+    rate-limit:
+      calls-per-window: 5
+      window-seconds: 60
+      calls-per-day: 30
+    output-tokens:
+      itinerary: 8192
+      chat: 2048
+      recommendation: 2048
+      modification: 8192
+      budget-optimization: 2048
+      diagnostic: 512
   documents:
     max-file-size-bytes: 10485760
     allowed-content-types:

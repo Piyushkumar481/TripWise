@@ -1,4 +1,4 @@
-﻿import { ArrowRight, MapPin } from "lucide-react"
+import { ArrowRight, MapPin } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 function DashboardHero() {
@@ -16,7 +16,7 @@ function DashboardHero() {
       {/* LIGHT overlay — important */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#effaf8]/100 via-[#effaf8]/90 via-55% to-transparent" />
 
-      <div className="relative z-10 flex min-h-[320px] items-center px-7 py-10 sm:px-10 lg:px-12">
+      <div className="relative z-10 flex min-h-[320px] items-center px-5 py-8 sm:px-10 sm:py-10 lg:px-12">
 
         <div className="max-w-[650px]">
 
@@ -28,7 +28,7 @@ function DashboardHero() {
             Experience
           </p>
 
-          <h1 className="font-serif text-[40px] font-bold leading-[1.02] tracking-[-0.03em] text-[#17233c] sm:text-[48px] lg:text-[54px]">
+          <h1 className="font-serif text-[34px] font-bold leading-[1.05] tracking-[-0.03em] text-[#17233c] sm:text-[48px] lg:text-[54px]">
             Turn Your Travel
             <br />
             Plans Into{" "}

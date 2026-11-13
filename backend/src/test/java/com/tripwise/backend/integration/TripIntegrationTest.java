@@ -8,15 +8,18 @@ import com.tripwise.backend.entity.TripStatus;
 import com.tripwise.backend.entity.User;
 import com.tripwise.backend.repository.TripRepository;
 import com.tripwise.backend.repository.UserRepository;
+import com.tripwise.backend.security.JwtService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -45,6 +48,9 @@ class TripIntegrationTest extends PostgresIntegrationTestBase {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
     private final ObjectMapper objectMapper =
             new ObjectMapper();
@@ -90,6 +96,50 @@ class TripIntegrationTest extends PostgresIntegrationTestBase {
     }
 
     @Test
+    void shouldRejectInvalidJwt() throws Exception {
+
+        mockMvc.perform(
+                get("/api/trips")
+                        .header(
+                                "Authorization",
+                                "Bearer not-a-valid-jwt"
+                        )
+        )
+        .andExpect(
+                status().isUnauthorized()
+        );
+    }
+
+    @Test
+    void shouldRejectExpiredJwt() throws Exception {
+
+        JwtService expiredTokenIssuer = new JwtService();
+        ReflectionTestUtils.setField(
+                expiredTokenIssuer,
+                "secret",
+                jwtSecret
+        );
+        ReflectionTestUtils.setField(
+                expiredTokenIssuer,
+                "expiration",
+                -1000L
+        );
+        String expiredToken =
+                expiredTokenIssuer.generateToken(testUser.getEmail());
+
+        mockMvc.perform(
+                get("/api/trips")
+                        .header(
+                                "Authorization",
+                                "Bearer " + expiredToken
+                        )
+        )
+        .andExpect(
+                status().isUnauthorized()
+        );
+    }
+
+    @Test
     void shouldLoginSuccessfully() throws Exception {
 
         String loginRequest = """
@@ -99,14 +149,22 @@ class TripIntegrationTest extends PostgresIntegrationTestBase {
                 }
                 """;
 
-        mockMvc.perform(
+        String response =
+                mockMvc.perform(
                 post("/api/auth/login")
                         .contentType(APPLICATION_JSON)
                         .content(loginRequest)
         )
         .andExpect(
                 status().isOk()
-        );
+        )
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+        JsonNode loginRoot = objectMapper.readTree(response);
+        assertNotNull(loginRoot.path("data").path("token").asText(null));
+        assertNotNull(loginRoot.path("data").path("user").path("email").asText(null));
     }
 
     @Test

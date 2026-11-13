@@ -105,7 +105,7 @@ The project demonstrates full-stack development, REST API integration, database 
 
 ### Backend
 
-- Java 21
+- Java 25 (LTS)
 - Spring Boot 3
 - Spring Web
 - Spring Security
@@ -252,7 +252,7 @@ The folder tree summarizes the main repository areas. Individual files and packa
 Install the following tools:
 
 - Git
-- Java Development Kit 21
+- Java Development Kit 25 (LTS)
 - Node.js and npm
 - Docker when required by the backend integration tests
 - Access to a PostgreSQL database
@@ -273,7 +273,7 @@ Open PowerShell in the repository directory and run:
 
 ```powershell
 cd backend
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
 
 The backend requires a reachable PostgreSQL database and the necessary application settings. Keep the terminal open while running the application. The backend uses the port configured by the Spring Boot application.

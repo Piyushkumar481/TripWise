@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @keyframes travelZoom {
   0%,
@@ -77,5 +77,39 @@
   50% {
     transform: translate3d(10px, -18px, 0);
     opacity: 0.8;
+  }
+}
+
+
+/* TRIPWISE ACCESSIBILITY AND GLOBAL BASE */
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #f7f5ef;
+  color: #17233c;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #159b9b;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

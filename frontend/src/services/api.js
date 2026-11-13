@@ -33,12 +33,43 @@ api.interceptors.request.use(
   }
 )
 
+const AUTH_ENDPOINTS = [
+  "/api/auth/login",
+  "/api/auth/register",
+]
+
+const isAuthenticationRequest = (url = "") => {
+  const requestPath = url.split("?")[0].replace(/\/+$/, "")
+
+  return AUTH_ENDPOINTS.some((endpoint) =>
+    requestPath.endsWith(endpoint)
+  )
+}
+
+let isRedirectingAfterUnauthorized = false
+
 api.interceptors.response.use(
   (response) => {
     return response
   },
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+    const hasStoredToken = Boolean(
+      localStorage.getItem("tripwise_token")
+    )
+
+    const isAuthRequest = isAuthenticationRequest(
+      error.config?.url
+    )
+
+    if (
+      status === 401 &&
+      hasStoredToken &&
+      !isAuthRequest &&
+      !isRedirectingAfterUnauthorized
+    ) {
+      isRedirectingAfterUnauthorized = true
+
       localStorage.removeItem("tripwise_token")
       localStorage.removeItem("tripwise_user")
 

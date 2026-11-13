@@ -1,0 +1,357 @@
+.ai-budget-panel {
+  margin: 28px 0;
+  padding: 28px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 18px;
+  background: var(--card-background, #ffffff);
+  color: var(--text-color, #172033);
+}
+
+.ai-budget-heading {
+  margin-bottom: 25px;
+}
+
+.ai-budget-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #6366f1;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.ai-budget-heading h2,
+.ai-budget-results-heading h3 {
+  margin: 0 0 9px;
+  font-size: 25px;
+  font-weight: 750;
+}
+
+.ai-budget-heading p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted-color, #64748b);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ai-budget-current-cost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+  padding: 17px 19px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  background: var(--soft-background, #f8fafc);
+}
+
+.ai-budget-current-cost span {
+  color: var(--muted-color, #64748b);
+  font-size: 13px;
+}
+
+.ai-budget-current-cost strong {
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.ai-budget-form {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.ai-budget-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ai-budget-field label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ai-budget-field input,
+.ai-budget-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color, #dbe2ea);
+  border-radius: 10px;
+  background: var(--input-background, #ffffff);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ai-budget-field input:focus,
+.ai-budget-field textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.ai-budget-field input[readonly] {
+  background: var(--soft-background, #f8fafc);
+  cursor: default;
+}
+
+.ai-budget-hint {
+  color: var(--muted-color, #64748b);
+  font-size: 12px;
+}
+
+.ai-budget-submit {
+  align-self: flex-start;
+  padding: 12px 21px;
+  border: none;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ai-budget-submit:hover:not(:disabled) {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+
+.ai-budget-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ai-budget-loading,
+.ai-budget-error {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ai-budget-loading {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.ai-budget-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.ai-budget-results {
+  margin-top: 35px;
+}
+
+.ai-budget-results-heading {
+  margin-bottom: 19px;
+}
+
+.ai-budget-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ai-budget-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 13px;
+}
+
+.ai-budget-summary-card span {
+  color: var(--muted-color, #64748b);
+  font-size: 12px;
+}
+
+.ai-budget-summary-card strong {
+  overflow-wrap: anywhere;
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.ai-budget-savings-card {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.ai-budget-savings-card strong {
+  color: #15803d;
+}
+
+.ai-budget-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 17px;
+  padding: 14px 17px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.ai-budget-status.within-budget {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.ai-budget-status.above-budget {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.ai-budget-suggestions-heading {
+  margin-top: 29px;
+  margin-bottom: 15px;
+}
+
+.ai-budget-suggestions-heading h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.ai-budget-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-budget-suggestion-card {
+  padding: 20px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 13px;
+  background: var(--card-background, #ffffff);
+}
+
+.ai-budget-suggestion-top,
+.ai-budget-suggestion-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-budget-suggestion-top h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.ai-budget-suggestion-top span,
+.ai-budget-suggestion-bottom span {
+  color: var(--muted-color, #64748b);
+  font-size: 12px;
+}
+
+.ai-budget-expense-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.ai-budget-expense-comparison > div {
+  padding: 15px;
+  border-radius: 10px;
+  background: var(--soft-background, #f8fafc);
+}
+
+.ai-budget-expense-comparison span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted-color, #64748b);
+  font-size: 12px;
+}
+
+.ai-budget-expense-comparison strong {
+  font-size: 19px;
+}
+
+.ai-budget-expense-comparison p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.ai-budget-suggestion-bottom {
+  margin-top: 17px;
+}
+
+.ai-budget-suggestion-bottom > strong {
+  color: #15803d;
+  font-size: 14px;
+}
+
+.ai-budget-reason {
+  margin: 12px 0 0;
+  color: var(--muted-color, #64748b);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ai-budget-summary-note {
+  margin-top: 23px;
+  padding: 19px;
+  border-radius: 12px;
+  background: var(--soft-background, #f8fafc);
+}
+
+.ai-budget-summary-note h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.ai-budget-summary-note p {
+  margin: 0;
+  color: var(--muted-color, #64748b);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ai-budget-empty {
+  padding: 15px;
+  color: var(--muted-color, #64748b);
+  font-size: 14px;
+}
+
+.ai-budget-disclaimer {
+  margin-top: 19px;
+  color: var(--muted-color, #64748b);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+@media (max-width: 700px) {
+  .ai-budget-panel {
+    padding: 18px;
+  }
+
+  .ai-budget-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-budget-expense-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-budget-submit {
+    width: 100%;
+  }
+
+  .ai-budget-current-cost {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

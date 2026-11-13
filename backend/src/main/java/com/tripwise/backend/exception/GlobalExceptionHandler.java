@@ -11,6 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -213,6 +214,99 @@ public class GlobalExceptionHandler {
         );
     }
 
+
+    @ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<ErrorResponse> handleResponseStatusException(
+        ResponseStatusException exception,
+        HttpServletRequest request) {
+
+    HttpStatus status = HttpStatus.valueOf(
+            exception.getStatusCode().value()
+    );
+
+    String message = exception.getReason() != null
+            ? exception.getReason()
+            : status.getReasonPhrase();
+
+    return buildResponse(
+            status,
+            status.getReasonPhrase(),
+            message,
+            request
+    );
+}
+
+    @ExceptionHandler(AIQuotaExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIQuotaExceeded(
+            AIQuotaExceededException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "AI Quota Exceeded",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(AIRequestRateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIRequestRateLimitExceeded(
+            AIRequestRateLimitExceededException exception,
+            HttpServletRequest request) {
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(
+                        "Retry-After",
+                        Long.toString(exception.getRetryAfterSeconds())
+                )
+                .body(new ErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        "Too Many Requests",
+                        exception.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(AIUsageLimitStoreUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAIUsageLimitStoreUnavailable(
+            AIUsageLimitStoreUnavailableException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "AI Usage Limit Store Unavailable",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(AIOutputLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleAIOutputLimitExceeded(
+            AIOutputLimitExceededException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.BAD_GATEWAY,
+                "AI Response Limit Exceeded",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(AIServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAIServiceUnavailable(
+            AIServiceUnavailableException exception,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "AI Service Unavailable",
+                exception.getMessage(),
+                request
+        );
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception exception,
@@ -250,4 +344,3 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 }
-

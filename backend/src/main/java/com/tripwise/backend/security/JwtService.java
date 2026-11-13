@@ -3,7 +3,11 @@ package com.tripwise.backend.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,11 +17,49 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private static final int MINIMUM_SECRET_BYTES = 32;
+    private static final String DEVELOPMENT_SECRET_PLACEHOLDER =
+            "replace-with-a-strong-random-secret";
+
     @Value("${jwt.secret}")
     private String secret;
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    @Autowired
+    private Environment environment;
+
+    @PostConstruct
+    void validateConfiguredSecret() {
+        validateSecret(
+                secret,
+                environment.acceptsProfiles(Profiles.of("prod"))
+        );
+    }
+
+    static void validateSecret(String secret, boolean production) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must be configured and non-blank."
+            );
+        }
+
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < MINIMUM_SECRET_BYTES) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must contain at least 32 UTF-8 bytes for HMAC signing."
+            );
+        }
+
+        if (production
+                && DEVELOPMENT_SECRET_PLACEHOLDER.equalsIgnoreCase(
+                        secret.strip())) {
+            throw new IllegalStateException(
+                    "JWT_SECRET must not use the example placeholder in production."
+            );
+        }
+    }
 
     private SecretKey getSigningKey() {
 

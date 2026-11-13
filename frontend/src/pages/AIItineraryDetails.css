@@ -1,0 +1,580 @@
+﻿.itinerary-details-page {
+  min-height: 100vh;
+  padding: 36px 24px 80px;
+  background: #f7f5ef;
+  color: #17233c;
+}
+
+.itinerary-details-container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.details-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 26px;
+  color: #71808d;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.details-back-link:hover {
+  color: #159b9b;
+}
+
+.itinerary-details-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 42px;
+  margin-bottom: 56px;
+  border-radius: 24px;
+  background: #edf8f6;
+  border: 1px solid #dceee8;
+  color: #17233c;
+  box-shadow: 0 12px 32px rgba(23, 35, 60, 0.06);
+}
+
+.details-hero-content {
+  min-width: 0;
+}
+
+.details-eyebrow,
+.section-label {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.details-eyebrow {
+  color: #087f82;
+}
+
+.itinerary-details-hero h1 {
+  margin: 0 0 20px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.details-summary {
+  max-width: 720px;
+  margin: 0 0 22px;
+  color: #526777;
+  line-height: 1.7;
+}
+
+.details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.details-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #526777;
+  font-size: 0.95rem;
+}
+
+.details-meta svg {
+  color: #159b9b;
+}
+
+.details-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.details-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.details-action-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.details-action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.regenerate-button {
+  color: white;
+  background: #159b9b;
+}
+
+.regenerate-button:hover:not(:disabled) {
+  background: #087f82;
+}
+
+.delete-button {
+  color: #a33b3b;
+  background: white;
+  border-color: #ead8d5;
+}
+
+.delete-button:hover:not(:disabled) {
+  background: #fff2ef;
+}
+
+.itinerary-section,
+.details-info-section {
+  margin-bottom: 56px;
+}
+
+.section-heading {
+  margin-bottom: 28px;
+}
+
+.section-label {
+  color: #159b9b;
+}
+
+.section-heading h2 {
+  margin: 0 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: #17233c;
+}
+
+.section-heading p {
+  margin: 0;
+  color: #71808d;
+}
+
+.itinerary-days {
+  display: grid;
+  gap: 24px;
+}
+
+.itinerary-day-card {
+  padding: 30px;
+  border: 1px solid #e1e7e3;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 8px 24px rgba(23, 35, 60, 0.04);
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.day-number {
+  display: grid;
+  place-items: center;
+  min-width: 68px;
+  min-height: 58px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #edf8f6;
+  color: #087f82;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.day-card-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #17233c;
+}
+
+.day-description {
+  color: #71808d;
+  line-height: 1.7;
+}
+
+.activity-timeline {
+  margin-top: 28px;
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 14px;
+  padding-bottom: 28px;
+}
+
+.activity-item:last-child {
+  padding-bottom: 0;
+}
+
+.activity-timeline-marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.activity-timeline-marker::after {
+  position: absolute;
+  top: 12px;
+  bottom: -28px;
+  width: 2px;
+  background: #dceee8;
+  content: "";
+}
+
+.activity-item:last-child .activity-timeline-marker::after {
+  display: none;
+}
+
+.activity-timeline-marker span {
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border: 3px solid #c8e9e3;
+  border-radius: 50%;
+  background: #159b9b;
+}
+
+.activity-content {
+  min-width: 0;
+}
+
+.activity-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #087f82;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.activity-content h4 {
+  margin: 0 0 8px;
+  font-size: 1.08rem;
+  color: #17233c;
+}
+
+.activity-content p {
+  margin: 0;
+  color: #71808d;
+  line-height: 1.65;
+}
+
+.activity-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #71808d;
+  font-size: 0.88rem;
+}
+
+.activity-cost {
+  margin-top: 8px;
+  color: #087f82;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.activity-transport {
+  margin-top: 8px;
+  color: #526777;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.details-info-section {
+  margin-top: 48px;
+}
+
+.expense-breakdown {
+  padding: 26px;
+  border: 1px solid #e1e7e3;
+  border-radius: 24px;
+  background: white;
+}
+
+.expense-row,
+.expense-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 0;
+}
+
+.expense-row {
+  border-bottom: 1px solid #e1e7e3;
+  color: #71808d;
+}
+
+.expense-row strong,
+.expense-total strong {
+  color: #17233c;
+}
+
+.expense-total {
+  margin-top: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.travel-tips-list {
+  display: grid;
+  gap: 14px;
+}
+
+.travel-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #dceee8;
+  border-radius: 16px;
+  background: #edf8f6;
+}
+
+.travel-tip svg {
+  flex-shrink: 0;
+  color: #159b9b;
+}
+
+.travel-tip p {
+  margin: 0;
+  line-height: 1.6;
+  color: #526777;
+}
+
+.details-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.details-empty-state,
+.itinerary-details-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 300px;
+  padding: 30px;
+  text-align: center;
+  color: #71808d;
+}
+
+.details-empty-state h3,
+.itinerary-details-state h2 {
+  margin: 0;
+  color: #17233c;
+}
+
+.details-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #159b9b;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.details-back-button:hover {
+  background: #087f82;
+}
+
+.details-bottom-navigation {
+  padding-top: 12px;
+}
+
+.loading-spinner {
+  animation: details-spin 1s linear infinite;
+}
+
+@keyframes details-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .itinerary-details-page {
+    padding: 24px 14px 60px;
+  }
+
+  .itinerary-details-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 28px 22px;
+  }
+
+  .details-hero-actions {
+    width: 100%;
+  }
+
+  .details-action-button {
+    flex: 1;
+  }
+
+  .details-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .itinerary-day-card {
+    padding: 22px 18px;
+  }
+
+  .day-card-header {
+    align-items: flex-start;
+  }
+
+  .expense-row,
+  .expense-total {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .day-card-header {
+    flex-direction: column;
+  }
+
+  .details-hero-actions {
+    flex-direction: column;
+  }
+
+  .details-action-button {
+    width: 100%;
+  }
+}
+
+/* Horizontal itinerary actions below trip metadata */
+/* Horizontal itinerary actions below trip metadata */
+
+.itinerary-details-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+}
+
+.details-hero-content {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.details-hero-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.details-hero-actions .details-action-button {
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0 !important;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .details-hero-actions {
+    gap: 10px !important;
+  }
+
+  .details-hero-actions .details-action-button {
+    flex: 1 1 calc(50% - 10px) !important;
+  }
+}
+
+
+/* Professional mobile itinerary action layout */
+
+@media (max-width: 700px) {
+
+  .details-hero-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+
+  .details-hero-actions .details-action-button {
+    display: flex !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 76px;
+    padding: 12px 7px !important;
+    margin: 0 !important;
+    flex: none !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    text-wrap: balance;
+  }
+
+  .details-hero-actions .details-action-button svg {
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+  }
+
+  .details-hero-actions .delete-button {
+    grid-column: 1 / -1;
+    min-height: 46px;
+    flex-direction: row !important;
+    gap: 9px !important;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+  }
+
+  .details-hero-actions .delete-button svg {
+    width: 17px;
+    height: 17px;
+  }
+}

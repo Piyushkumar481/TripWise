@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowUpRight,
   BarChart3,
   CalendarDays,
@@ -25,6 +25,7 @@ function StatCard({
   label,
   value,
   description,
+  loading = false,
 }) {
   const Icon = iconMap[type] || BarChart3
   const accent = accentMap[type] || accentMap.trips
@@ -52,7 +53,15 @@ function StatCard({
         </p>
 
         <h3 className="mt-1 text-[28px] font-black tracking-tight text-[#17233c]">
-          {value}
+          {loading ? (
+            <span
+              role="status"
+              aria-label={`Loading ${label}`}
+              className="inline-block h-7 w-20 animate-pulse rounded-md bg-[#edf2ef] align-middle"
+            />
+          ) : (
+            value
+          )}
         </h3>
 
         <p className="mt-1 text-xs font-medium text-[#9aa5ae]">

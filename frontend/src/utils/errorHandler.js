@@ -6,37 +6,63 @@ export const getApiErrorMessage = (
     return fallbackMessage
   }
 
-  if (error.response?.data?.message) {
-    return error.response.data.message
+  const status = error.response?.status
+  const responseData = error.response?.data
+
+  // Handle network timeouts.
+  if (
+    error.code === "ECONNABORTED" ||
+    error.code === "ETIMEDOUT"
+  ) {
+    return "The request timed out. Please try again."
   }
 
-  if (error.response?.data?.error) {
-    return error.response.data.error
+  // Handle requests that never received a response.
+  if (!error.response) {
+    if (error.request) {
+      return "Unable to connect to the server. Please check your connection."
+    }
+
+    return fallbackMessage
   }
 
-  if (error.response?.status === 400) {
-    return "Invalid request. Please check your information."
+  // Prefer meaningful messages returned by the backend.
+  const serverMessage =
+    typeof responseData?.message === "string"
+      ? responseData.message.trim()
+      : ""
+
+  if (serverMessage) {
+    return serverMessage
   }
 
-  if (error.response?.status === 401) {
-    return "Your session has expired. Please log in again."
-  }
+  switch (status) {
+    case 400:
+      return "Invalid request. Please check your information."
 
-  if (error.response?.status === 403) {
-    return "You do not have permission to perform this action."
-  }
+    case 401:
+      return "Your session has expired. Please log in again."
 
-  if (error.response?.status === 404) {
-    return "The requested resource was not found."
-  }
+    case 403:
+      return "You do not have permission to perform this action."
 
-  if (error.response?.status >= 500) {
-    return "Server error. Please try again later."
-  }
+    case 404:
+      return "The requested resource was not found."
 
-  if (error.request) {
-    return "Unable to connect to the server."
-  }
+    case 409:
+      return "This request conflicts with existing information."
 
-  return fallbackMessage
+    case 429:
+      return "Too many requests. Please try again later."
+
+    case 503:
+      return "The service is temporarily unavailable. Please try again later."
+
+    default:
+      if (status >= 500) {
+        return "The server encountered an error. Please try again later."
+      }
+
+      return fallbackMessage
+  }
 }

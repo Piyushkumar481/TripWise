@@ -8,7 +8,7 @@ The backend provides REST APIs for authentication, trip management, itinerary pl
 
 ## Technologies
 
-- Java 21
+- Java 25 (LTS)
 - Spring Boot 4.1.0
 - Spring Security
 - JWT Authentication
